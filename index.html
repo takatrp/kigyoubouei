@@ -36,39 +36,32 @@
     .label.big{font-size:16px; font-weight:700; color:#324245;}
     .helper{font-size:12px; color:#6a7a7d; margin:4px 2px 0;}
 
-    .row{display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap;}
-    .col{flex:1 1 220px; min-width:220px;}
-    .col.narrow{flex:1 1 200px; min-width:200px;}
-
     .yen-input,.pctbox{display:flex; align-items:center; gap:8px; background:#f8fcfd; border:1px solid #d9eaed; border-radius:12px; padding:8px 10px;}
     .yen-input .prefix{font-weight:700; color:var(--accent); border-right:1px solid #e6f1f3; padding-right:10px;}
     input.money,input.pct{border:0; outline:none; background:transparent; font-size:20px; font-weight:800; color:var(--ink);
-      letter-spacing:.02em; width:160px; text-align:right; font-feature-settings:"tnum"; font-variant-numeric:tabular-nums;}
+      letter-spacing:.02em; width:180px; text-align:right; font-feature-settings:"tnum"; font-variant-numeric:tabular-nums;}
     .pctbox .unit{font-weight:800; color:var(--ink);}
-    .yen-input.small input{font-size:18px;}
-
-    /* 限界利益率（横配置用の簡潔UI） */
-    .cmr-wrap{display:flex; align-items:center; gap:10px;}
-    input[type="range"]{-webkit-appearance:none; width:140px; height:26px; background:transparent;}
+    input[type="range"]{-webkit-appearance:none; width:100%; height:26px; background:transparent;}
     input[type="range"]::-webkit-slider-runnable-track{height:6px; background:linear-gradient(90deg,var(--accent-2),var(--accent)); border-radius:999px;}
     input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none; width:22px; height:22px; border-radius:50%; background:#fff; border:2px solid var(--accent); margin-top:-8px; box-shadow:0 1px 6px rgba(0,0,0,.08);}
 
-    .btn{background:#eef7f8; color:var(--accent); font-weight:900; letter-spacing:.02em;
-      border:1px solid #d9eaed; border-radius:12px; padding:10px 12px; font-size:14px;}
-    .btn-row{display:none; gap:8px; margin-top:12px; justify-content:space-between;}
-    .btn-row.show{display:flex;}
+    .row{display:flex; flex-direction:column; gap:10px;} /* 縦並び */
+    .cmr-row{display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center;}
+
+    .btn{background:linear-gradient(180deg,var(--accent-2),var(--accent)); color:#fff; font-weight:900; letter-spacing:.02em;
+      border:0; border-radius:12px; padding:14px; font-size:16px; box-shadow:var(--shadow);}
+    .btn:active{transform:translateY(1px);}
+    .btn.secondary{background:#eef7f8; color:var(--accent); box-shadow:none; border:1px solid #d9eaed; padding:10px 12px; font-size:14px;}
+    .btn-row{display:flex; gap:8px; margin-top:12px; justify-content:space-between;}
     .btn-row .btn{flex:1;}
 
-    .result{margin-top:8px;}
+    .result{margin-top:12px;}
     .result .card-title{font-size:16px; font-weight:800; color:#324245; margin:0 0 6px;}
     .amount{font-size:clamp(22px,7vw,34px); font-weight:900; color:var(--accent); margin:4px 0 6px; font-feature-settings:"tnum"; font-variant-numeric:tabular-nums;}
     .kpi{display:flex; flex-wrap:wrap; gap:10px; align-items:center; color:#2b3a3d;}
     .kpi .chip{background:#e9f6f8; border:1px dashed #8fb3c0; border-radius:12px; padding:8px 10px; font-weight:900;}
     .kpi .muted{color:#5a6a6d; font-weight:700;}
-
-    /* 必要販売数（平均単価の直下・右寄せ） */
-    .metrics{margin-top:6px; text-align:right;}
-    .metrics .line{font-size:15px; color:#2b3a3d;}
+    .metrics{margin-top:6px; text-align:right; font-size:15px; color:#2b3a3d;}
     .metrics b{font-weight:900;}
 
     footer{margin:18px 4px 6px; text-align:center; color:#667; font-size:11px;}
@@ -82,127 +75,132 @@
         <img src="ロゴ.jpg" alt="松本会計事務所ロゴ" class="logo" />
         <h1 class="title">標準保障額・保険料売上換算ツール</h1>
       </div>
-      <div class="subtitle">①標準保障額・⑤必要保険料（月）を、御社の限界利益率で売上相当額に換算。③年間売上・④平均単価も踏まえ、割合と必要販売数を自動算出します。</div>
+      <div class="subtitle">①標準保障額／②限界利益率→計算で「標準保障額の売上相当額」。③必要保険料（月）→計算で「必要保険料の売上相当額」。④年間売上／⑤平均単価を入力すると各結果カードの下に％と必要販売数を自動追加表示。</div>
     </header>
 
-    <section class="card" aria-label="入力と結果">
-      <!-- 1行目：①標準保障額 と ②限界利益率（横並び） -->
+    <!-- セクションA：①②（縦）＋ 計算 → 標準保障額の売上相当額 -->
+    <section class="card" aria-label="標準保障額 計算">
       <div class="field">
-        <div class="row">
-          <div class="col">
-            <div class="label big">① 標準保障額（円）</div>
-            <div class="yen-input">
-              <span class="prefix">¥</span>
-              <input id="cov" class="money" type="text" inputmode="numeric" placeholder="例：5,000,000" autocomplete="off" />
-            </div>
-          </div>
-          <div class="col narrow">
-            <div class="label big">② 御社の限界利益率（％）</div>
-            <div class="cmr-wrap">
-              <input id="cmr" type="range" min="5" max="95" step="0.1" value="54.7" />
-              <div class="pctbox"><input id="cmrInput" class="pct" type="text" inputmode="decimal" value="54.7" /><span class="unit">%</span></div>
-            </div>
-            <div class="helper">※ 変動損益計算書などでご確認ください</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 2行目：③年間売上 -->
-      <div class="field">
-        <div class="label big">③ 年間売上（円）</div>
+        <div class="label big">① 標準保障額（円）</div>
         <div class="yen-input">
           <span class="prefix">¥</span>
-          <input id="annual" class="money" type="text" inputmode="numeric" placeholder="例：120,000,000" autocomplete="off" />
+          <input id="cov" class="money" type="text" inputmode="numeric" placeholder="例：5,000,000" autocomplete="off" />
         </div>
       </div>
 
-      <!-- 3行目：④平均単価（任意） -->
       <div class="field">
-        <div class="label big">④ 平均単価（任意）</div>
-        <div class="yen-input small">
-          <span class="prefix">¥</span>
-          <input id="avgPrice" class="money" type="text" inputmode="numeric" placeholder="例：10,000" autocomplete="off" />
+        <div class="label big">② 御社の限界利益率（％）</div>
+        <div class="cmr-row">
+          <input id="cmr" type="range" min="5" max="95" step="0.1" value="54.7" />
+          <div class="pctbox"><input id="cmrInput" class="pct" type="text" inputmode="decimal" value="54.7" /><span class="unit">%</span></div>
         </div>
-        <!-- 必要販売数は平均単価の直下・右寄せ -->
-        <div class="metrics" id="unitsMetrics" hidden>
-          <div class="line" id="unitsCovLine" hidden>＝ 必要販売数（標準保障額）： <b id="unitsCov">—</b></div>
-          <div class="line" id="unitsPremLine" hidden>＝ 必要販売数（保険料／月）： <b id="unitsPrem">—</b></div>
-        </div>
+        <div class="helper">※ 入力後に［計算］を押してください</div>
       </div>
 
-      <!-- 4行目：⑤必要保険料（月） -->
-      <div class="field">
-        <div class="label big">⑤ 必要保険料（円／月）</div>
-        <div class="yen-input">
-          <span class="prefix">¥</span>
-          <input id="prem" class="money" type="text" inputmode="numeric" placeholder="例：12,000" autocomplete="off" />
-        </div>
-      </div>
+      <button id="calcCov" class="btn" type="button">計算</button>
 
       <!-- 結果：標準保障額 -->
       <div class="result" id="resCov" hidden>
         <p class="card-title">標準保障額の売上相当額</p>
         <div class="amount" id="salesCov"></div>
         <div class="kpi">
-          <span class="chip" id="pctAnnualCov">年間売上の — %</span>
-          <span class="muted" id="explainCov"></span>
+          <span class="chip" id="pctAnnualCov" hidden>年間売上の — %</span>
+          <span class="muted">計算式：標準保障額 ÷ (限界利益率 / 100)</span>
         </div>
+        <div class="metrics" id="unitsCovLine" hidden>＝ 必要販売数（標準保障額）： <b id="unitsCov">—</b></div>
+      </div>
+    </section>
+
+    <!-- セクションB：③＋ 計算 → 必要保険料の売上相当額 -->
+    <section class="card" aria-label="必要保険料 計算">
+      <div class="field">
+        <div class="label big">③ 必要保険料（円／月）</div>
+        <div class="yen-input">
+          <span class="prefix">¥</span>
+          <input id="prem" class="money" type="text" inputmode="numeric" placeholder="例：12,000" autocomplete="off" />
+        </div>
+        <div class="helper">※ 入力後に［計算］を押してください</div>
       </div>
 
-      <!-- 結果：必要保険料（月） -->
+      <button id="calcPrem" class="btn" type="button">計算</button>
+
+      <!-- 結果：必要保険料（月額） -->
       <div class="result" id="resPrem" hidden>
         <p class="card-title">必要保険料の売上相当額</p>
         <div class="amount" id="salesPrem"></div>
         <div class="kpi">
-          <span class="chip" id="pctMonthlyPrem">月間売上の — %</span>
-          <span class="muted" id="explainPrem"></span>
+          <span class="chip" id="pctMonthlyPrem" hidden>月間売上の — %</span>
+          <span class="muted">計算式：必要保険料(月) ÷ (限界利益率 / 100)</span>
+        </div>
+        <div class="metrics" id="unitsPremLine" hidden>＝ 必要販売数（保険料/月）： <b id="unitsPrem">—</b></div>
+      </div>
+    </section>
+
+    <!-- セクションC：任意（補助）入力：④⑤ -->
+    <section class="card" aria-label="任意入力">
+      <div class="field">
+        <div class="label big">④ 年間売上（任意）</div>
+        <div class="yen-input">
+          <span class="prefix">¥</span>
+          <input id="annual" class="money" type="text" inputmode="numeric" placeholder="例：120,000,000" autocomplete="off" />
         </div>
       </div>
 
-      <!-- 操作用ボタン（何か算出できたら表示） -->
-      <div class="btn-row" id="actionRow">
-        <button id="copy" class="btn" type="button">コピー</button>
-        <button id="reset" class="btn" type="button">リセット</button>
-        <button id="print" class="btn" type="button">印刷</button>
+      <div class="field">
+        <div class="label big">⑤ 平均単価（任意）</div>
+        <div class="yen-input">
+          <span class="prefix">¥</span>
+          <input id="avgPrice" class="money" type="text" inputmode="numeric" placeholder="例：10,000" autocomplete="off" />
+        </div>
+        <div class="helper">※ ④⑤は入力すると自動で各結果カードの下に反映されます（再計算ボタン不要）</div>
+      </div>
+
+      <!-- 共通操作 -->
+      <div class="btn-row">
+        <button id="copy" class="btn secondary" type="button">コピー</button>
+        <button id="reset" class="btn secondary" type="button">リセット</button>
+        <button id="print" class="btn secondary" type="button">印刷</button>
       </div>
     </section>
 
     <footer>
       Copyright (c) <span id="yyyy"></span>
       <a href="https://www.matsumoto-kaikei.or.jp/" target="_blank" rel="noopener">税理士法人松本会計事務所</a>
-      All Rights Reserved. / r23
+      All Rights Reserved. / r24
     </footer>
   </div>
 
   <script>
     const $ = s => document.querySelector(s);
-    const STORAGE_KEY_CMR = 'cmrPct_v2';
+    const STORAGE_KEY_CMR = 'cmrPct_v3';
     const DEFAULT_CMR = 54.7;
 
+    // 入力要素
     const covEl   = $('#cov');       // ① 標準保障額
     const cmrR    = $('#cmr');       // ② CMR range
     const cmrI    = $('#cmrInput');  // ② CMR input
-    const annualEl= $('#annual');    // ③ 年間売上
-    const avgEl   = $('#avgPrice');  // ④ 平均単価
-    const premEl  = $('#prem');      // ⑤ 必要保険料（月）
+    const premEl  = $('#prem');      // ③ 必要保険料（月）
+    const annualEl= $('#annual');    // ④ 年間売上
+    const avgEl   = $('#avgPrice');  // ⑤ 平均単価
 
-    const resCov  = $('#resCov');
-    const salesCovEl = $('#salesCov');
-    const pctAnnualCov = $('#pctAnnualCov');
-    const explainCov = $('#explainCov');
+    // 結果（標準保障額）
+    const resCov      = $('#resCov');
+    const salesCovEl  = $('#salesCov');
+    const pctAnnualCov= $('#pctAnnualCov');
+    const unitsCovLine= $('#unitsCovLine');
+    const unitsCov    = $('#unitsCov');
 
-    const resPrem = $('#resPrem');
-    const salesPremEl = $('#salesPrem');
-    const pctMonthlyPrem = $('#pctMonthlyPrem');
-    const explainPrem = $('#explainPrem');
-
-    const unitsBox = $('#unitsMetrics');
-    const unitsCovLine = $('#unitsCovLine');
+    // 結果（保険料）
+    const resPrem       = $('#resPrem');
+    const salesPremEl   = $('#salesPrem');
+    const pctMonthlyPrem= $('#pctMonthlyPrem');
     const unitsPremLine = $('#unitsPremLine');
-    const unitsCov = $('#unitsCov');
-    const unitsPrem = $('#unitsPrem');
+    const unitsPrem     = $('#unitsPrem');
 
-    const actionRow = $('#actionRow');
+    // 操作ボタン
+    const copyBtn  = $('#copy');
+    const resetBtn = $('#reset');
+    const printBtn = $('#print');
 
     $('#yyyy').textContent = String(new Date().getFullYear());
 
@@ -219,11 +217,12 @@
       // ①〜⑨/⓪ → 半角
       const map = {'⓪':'0','①':'1','②':'2','③':'3','④':'4','⑤':'5','⑥':'6','⑦':'7','⑧':'8','⑨':'9'};
       str = str.replace(/[⓪①②③④⑤⑥⑦⑧⑨]/g, s => map[s] || s);
+      // 数字以外除去（カンマ等）
       return str.replace(/[^\d]/g,'');
     }
 
     // ========= 入力整形（ライブ正規化＋blurでカンマ） =========
-    [covEl, annualEl, avgEl, premEl].forEach(el=>{
+    [covEl, premEl, annualEl, avgEl].forEach(el=>{
       el.addEventListener('input', (e)=>{
         const v = e.target.value;
         const norm = normalizeNumericInput(v);
@@ -232,7 +231,8 @@
           e.target.value = norm;
           if(atEnd){ const L = e.target.value.length; requestAnimationFrame(()=>e.target.setSelectionRange(L, L)); }
         }
-        recalc(); // 自動計算
+        // 任意入力は自動反映
+        if(e.target===annualEl || e.target===avgEl){ updateOptionalMetrics(); }
       });
       el.addEventListener('focus', (e)=>{
         const n = parseMoney(e.target.value);
@@ -241,14 +241,12 @@
       el.addEventListener('blur', (e)=>{
         const n = parseMoney(e.target.value);
         e.target.value = isNaN(n) || n<=0 ? '' : formatPlainJPY(n);
+        if(e.target===annualEl || e.target===avgEl){ updateOptionalMetrics(); }
       });
     });
 
     // ========= 限界利益率の永続化 =========
-    function loadCmr(){
-      try{ const v=parsePct(localStorage.getItem(STORAGE_KEY_CMR)); if(!isNaN(v)) return clamp(v, +cmrR.min, +cmrR.max);}catch{}
-      return DEFAULT_CMR;
-    }
+    function loadCmr(){ try{ const v=parsePct(localStorage.getItem(STORAGE_KEY_CMR)); if(!isNaN(v)) return clamp(v, +cmrR.min, +cmrR.max);}catch{} return DEFAULT_CMR; }
     function saveCmr(v){ try{ localStorage.setItem(STORAGE_KEY_CMR, Number(v).toFixed(1)); }catch{} }
 
     const initCmr = loadCmr();
@@ -259,7 +257,6 @@
       const v = +cmrR.value;
       if(document.activeElement!==cmrI){ cmrI.value = v.toFixed(1); }
       saveCmr(v);
-      recalc();
     });
     function commitCmrInput(){
       const v = parsePct(cmrI.value);
@@ -272,111 +269,118 @@
     cmrI.addEventListener('input', ()=>{
       const v = parsePct(cmrI.value);
       if(!isNaN(v) && v>=+cmrR.min && v<=+cmrR.max){ cmrR.value = v.toFixed(1); }
-      recalc();
     });
     cmrI.addEventListener('blur', commitCmrInput);
 
-    // ========= 計算本体（自動） =========
+    // ========= 計算本体 =========
     let salesNeededCov = 0;   // 保障額ベース（合計）
     let salesNeededPrem = 0;  // 月額保険料ベース（1か月）
 
-    function recalc(){
+    function calcCoverage(){
       commitCmrInput();
       const cmr = parsePct(cmrI.value);
       const rate = (isNaN(cmr) ? NaN : cmr/100);
+      const cov  = parseMoney(covEl.value);
 
-      const cov = parseMoney(covEl.value);
-      const annual = parseMoney(annualEl.value);
-      const monthlySales = (!isNaN(annual) && annual>0) ? (annual/12) : NaN;
-      const avg = parseMoney(avgEl.value);
+      if(isNaN(rate) || rate<=0){ alert('限界利益率を正しく入力してください。'); cmrI.focus(); return; }
+      if(isNaN(cov) || cov<=0){ alert('標準保障額を入力してください。'); covEl.focus(); return; }
+
+      salesNeededCov = Math.ceil(cov / rate);
+      resCov.hidden = false;
+      salesCovEl.textContent = formatJPY(salesNeededCov);
+
+      // 任意情報の反映
+      updateOptionalMetrics();
+      resCov.scrollIntoView({behavior:'smooth', block:'center'});
+    }
+
+    function calcPremium(){
+      commitCmrInput();
+      const cmr = parsePct(cmrI.value);
+      const rate = (isNaN(cmr) ? NaN : cmr/100);
       const prem = parseMoney(premEl.value);
 
-      // 標準保障額側
-      if(!isNaN(rate) && rate>0 && !isNaN(cov) && cov>0){
-        salesNeededCov = Math.ceil(cov / rate);
-        resCov.hidden = false;
-        salesCovEl.textContent = formatJPY(salesNeededCov);
-        // 年間売上に対する割合
+      if(isNaN(rate) || rate<=0){ alert('限界利益率を正しく入力してください。'); cmrI.focus(); return; }
+      if(isNaN(prem) || prem<=0){ alert('必要保険料（月額）を入力してください。'); premEl.focus(); return; }
+
+      salesNeededPrem = Math.ceil(prem / rate);
+      resPrem.hidden = false;
+      salesPremEl.textContent = `${formatJPY(salesNeededPrem)} / 月`;
+
+      // 任意情報の反映
+      updateOptionalMetrics();
+      resPrem.scrollIntoView({behavior:'smooth', block:'center'});
+    }
+
+    // ④⑤が入力されたら各結果カードの下に反映
+    function updateOptionalMetrics(){
+      const annual = parseMoney(annualEl.value);
+      const avg    = parseMoney(avgEl.value);
+
+      // 標準保障額カード
+      if(!resCov.hidden && salesNeededCov>0){
         if(!isNaN(annual) && annual>0){
           const p = (salesNeededCov/annual)*100;
           pctAnnualCov.textContent = `年間売上の ${p.toFixed(1)}%`;
+          pctAnnualCov.hidden = false;
         }else{
-          pctAnnualCov.textContent = `年間売上の — %`;
+          pctAnnualCov.hidden = true;
         }
-        explainCov.textContent = `計算式：標準保障額 ÷ (限界利益率/100)`;
-      }else{
-        resCov.hidden = true;
-        salesNeededCov = 0;
-      }
-
-      // 月額保険料側
-      if(!isNaN(rate) && rate>0 && !isNaN(prem) && prem>0){
-        salesNeededPrem = Math.ceil(prem / rate);
-        resPrem.hidden = false;
-        salesPremEl.textContent = `${formatJPY(salesNeededPrem)} / 月`;
-        if(!isNaN(monthlySales) && monthlySales>0){
-          const p = (salesNeededPrem/monthlySales)*100;
-          pctMonthlyPrem.textContent = `月間売上の ${p.toFixed(1)}%`;
+        if(!isNaN(avg) && avg>0){
+          const units = salesNeededCov / avg;
+          unitsCov.textContent = units.toFixed(1);
+          unitsCovLine.hidden = false;
         }else{
-          pctMonthlyPrem.textContent = `月間売上の — %`;
+          unitsCovLine.hidden = true;
+          unitsCov.textContent = '—';
         }
-        explainPrem.textContent = `計算式：必要保険料(月) ÷ (限界利益率/100)`;
-      }else{
-        resPrem.hidden = true;
-        salesNeededPrem = 0;
       }
 
-      // 必要販売数（平均単価の直下・右寄せ）表示制御
-      const showUnitsBox = (!!salesNeededCov || !!salesNeededPrem);
-      unitsBox.hidden = !showUnitsBox;
-
-      // 標準保障額ベースの必要販売数
-      if(showUnitsBox && !isNaN(avg) && avg>0 && salesNeededCov>0){
-        const units = salesNeededCov / avg;
-        unitsCov.textContent = units.toFixed(1);
-        unitsCovLine.hidden = false;
-      }else{
-        unitsCovLine.hidden = true;
-        unitsCov.textContent = '—';
+      // 保険料カード（月間）
+      if(!resPrem.hidden && salesNeededPrem>0){
+        if(!isNaN(annual) && annual>0){
+          const monthlySales = annual/12;
+          if(monthlySales>0){
+            const p = (salesNeededPrem/monthlySales)*100;
+            pctMonthlyPrem.textContent = `月間売上の ${p.toFixed(1)}%`;
+            pctMonthlyPrem.hidden = false;
+          }else{
+            pctMonthlyPrem.hidden = true;
+          }
+        }else{
+          pctMonthlyPrem.hidden = true;
+        }
+        if(!isNaN(avg) && avg>0){
+          const units = salesNeededPrem / avg;
+          unitsPrem.textContent = units.toFixed(1);
+          unitsPremLine.hidden = false;
+        }else{
+          unitsPremLine.hidden = true;
+          unitsPrem.textContent = '—';
+        }
       }
-
-      // 月額保険料ベースの必要販売数
-      if(showUnitsBox && !isNaN(avg) && avg>0 && salesNeededPrem>0){
-        const units = salesNeededPrem / avg;
-        unitsPrem.textContent = units.toFixed(1);
-        unitsPremLine.hidden = false;
-      }else{
-        unitsPremLine.hidden = true;
-        unitsPrem.textContent = '—';
-      }
-
-      // アクションボタンの表示
-      actionRow.classList.toggle('show', (!resCov.hidden || !resPrem.hidden));
     }
 
-    // 初回計算
-    recalc();
+    // クリックイベント
+    $('#calcCov').addEventListener('click', calcCoverage);
+    $('#calcPrem').addEventListener('click', calcPremium);
 
     // コピー
-    $('#copy').addEventListener('click', async ()=>{
-      const lines = [];
-      const cmrTxt = `${(+cmrI.value).toFixed(1)}%`;
+    copyBtn.addEventListener('click', async ()=>{
+      const cmrTxt = `${(+parsePct(cmrI.value)).toFixed(1)}%`;
       const annual = parseMoney(annualEl.value);
-      const avg = parseMoney(avgEl.value);
+      const avg    = parseMoney(avgEl.value);
+      const lines = [];
 
       if(!resCov.hidden){
         lines.push(`[標準保障額ベース] 売上相当額: ${salesCovEl.textContent}（CMR ${cmrTxt}）`);
-        lines.push(`・年間売上に対する割合: ${pctAnnualCov.textContent.replace('年間売上の ','')}`);
-        if(!isNaN(avg) && avg>0 && !unitsCovLine.hidden){
-          lines.push(`・必要販売数（合計）: ${unitsCov.textContent}`);
-        }
+        if(!pctAnnualCov.hidden){ lines.push(`・${pctAnnualCov.textContent}`); }
+        if(!unitsCovLine.hidden){ lines.push(`・${unitsCovLine.textContent}`); }
       }
       if(!resPrem.hidden){
         lines.push(`[保険料(月)ベース] 売上相当額: ${salesPremEl.textContent}（CMR ${cmrTxt}）`);
-        lines.push(`・月間売上に対する割合: ${pctMonthlyPrem.textContent.replace('月間売上の ','')}`);
-        if(!isNaN(avg) && avg>0 && !unitsPremLine.hidden){
-          lines.push(`・必要販売数（月）: ${unitsPrem.textContent}`);
-        }
+        if(!pctMonthlyPrem.hidden){ lines.push(`・${pctMonthlyPrem.textContent}`); }
+        if(!unitsPremLine.hidden){ lines.push(`・${unitsPremLine.textContent}`); }
       }
       if(!isNaN(annual) && annual>0){ lines.push(`年間売上: ¥${formatPlainJPY(annual)}`); }
       if(!isNaN(avg) && avg>0){ lines.push(`平均単価: ¥${formatPlainJPY(avg)}`); }
@@ -392,15 +396,19 @@
     });
 
     // リセット
-    $('#reset').addEventListener('click', ()=>{
-      covEl.value=''; annualEl.value=''; avgEl.value=''; premEl.value='';
+    resetBtn.addEventListener('click', ()=>{
+      [covEl, premEl, annualEl, avgEl].forEach(el=> el.value='');
       const cmr0 = loadCmr(); cmrR.value=cmr0.toFixed(1); cmrI.value=cmr0.toFixed(1);
-      recalc();
+      salesNeededCov = 0; salesNeededPrem = 0;
+      resCov.hidden = true; resPrem.hidden = true;
+      pctAnnualCov.hidden = true; pctMonthlyPrem.hidden = true;
+      unitsCovLine.hidden = true; unitsPremLine.hidden = true;
+      unitsCov.textContent = '—'; unitsPrem.textContent='—';
       window.scrollTo({top:0, behavior:'smooth'});
     });
 
     // 印刷
-    $('#print').addEventListener('click', ()=>{ if(resCov.hidden && resPrem.hidden){ return; } window.print(); });
+    printBtn.addEventListener('click', ()=>{ if(resCov.hidden && resPrem.hidden){ return; } window.print(); });
   </script>
 </body>
 </html>
