@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>標準保障額・保険料売上換算ツール</title>
 
-  <!-- Favicon（ICO/PNG 両対応） -->
+  <!-- Favicon -->
   <link rel="icon" href="favicon.ico" sizes="any" />
   <link rel="shortcut icon" href="favicon.ico" />
   <link rel="icon" type="image/png" sizes="192x192" href="favicon192192.png" />
@@ -14,7 +14,7 @@
 
   <style>
     :root{
-      --bg:#f4f9fb; --card:#ffffff; --ink:#1e2a2d; --muted:#5a6a6d;
+      --bg:#f4f9fb; --card:#ffffff; --ink:#2b3a3d; --muted:#5a6a6d;
       --accent:#578899; --accent-2:#7aa2b0; --shadow:0 10px 30px rgba(35,80,90,.12); --radius:16px;
       --border:#d9eaed; --blue:#1a6ea0;
     }
@@ -53,8 +53,16 @@
     .row-two{display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:end;}
     @media (max-width:680px){ .row-two{grid-template-columns:1fr;} }
 
-    .helper-btn{border:1px solid var(--border); background:#eef7f8; color:#2a6b7b; padding:6px 10px;
-      border-radius:10px; font-size:13px; font-weight:800; cursor:pointer;}
+    /* ← ここを調整：スマホで折り返さず・少し小さく */
+    .helper-btn{
+      border:1px solid var(--border); background:#eef7f8; color:#2a6b7b;
+      padding:6px 10px; border-radius:10px; font-size:13px; font-weight:800;
+      cursor:pointer; white-space:nowrap;
+    }
+    @media (max-width:420px){
+      .helper-btn{font-size:12px; padding:5px 8px;}
+      .inline-actions{gap:6px;}
+    }
 
     .btn{width:100%; background:linear-gradient(180deg,var(--accent-2),var(--accent)); color:#fff; font-weight:900;
       border:0; border-radius:12px; padding:10px 12px; font-size:15px;}
@@ -67,9 +75,9 @@
 
     .result{margin-top:12px;}
     .amount{font-size:clamp(22px,7vw,34px); font-weight:900; color:#2a6b7b; margin:4px 0 6px; font-feature-settings:"tnum"; font-variant-numeric:tabular-nums;}
-    .statement{font-weight:900; color:#2b3a3d; margin:6px 0 2px; line-height:1.6;}
+    .statement{font-weight:900; color:var(--ink); margin:6px 0 2px; line-height:1.6;}
     .blue{color:#1a6ea0;} .up1{font-size:1.1em;}
-    .note-line{color:#000;}  /* ← 追加行は黒色・通常サイズ */
+    .note-line{color:inherit;} /* ← 1行目と同じ色に合わせる */
 
     .kpi{display:flex; align-items:center; flex-wrap:wrap; gap:10px;}
     .chip-like{background:#e9f6f8; border:1px dashed #8fb3c0; border-radius:12px; padding:8px 10px; font-weight:900;}
@@ -195,7 +203,7 @@
     <footer>
       Copyright (c) <span id="yyyy"></span>
       <a href="https://www.matsumoto-kaikei.or.jp/" target="_blank" rel="noopener">税理士法人松本会計事務所</a>
-      All Rights Reserved. / r9
+      All Rights Reserved. / r11
     </footer>
   </div>
 
@@ -228,7 +236,7 @@
     const resPrem=$('#resPrem'), salesPremEl=$('#salesPrem'), stmtPrem=$('#stmtPrem');
     const pctSalesPrem=$('#pctSalesPrem'), unitsPremChip=$('#unitsPremChip');
 
-    // 既定CMR 54.7%
+    // 既定CMR
     function setCmr(v){ cmrR.value=Number(v).toFixed(1); cmrI.value=Number(v).toFixed(1); }
     setCmr(54.7);
     cmrR.addEventListener('input', ()=>{ cmrI.value=(+cmrR.value).toFixed(1); if(autoAny()) autoRecalc(); });
@@ -318,7 +326,6 @@
       const salesNeededCov = Math.ceil(cov / rate);
       resCov.hidden=false;
       salesCovEl.textContent = fmtJPY(salesNeededCov);
-      // 追加行（黒）→ 青行 の順で表示
       stmtCov.innerHTML =
         `標準保障額 ${fmtJPY(cov)} は、御社の売上 ${fmtJPY(salesNeededCov)} に相当します。<br>`+
         `<span class="note-line">標準保障額は、保険事故発生後に短期間で必要と想定される金額です。</span><br>`+
@@ -353,7 +360,7 @@
       if(scroll) resPrem.scrollIntoView({behavior:'smooth', block:'center'});
     }
 
-    // ボタン
+    // クリック
     $('#calcCov').addEventListener('click', ()=> calcCoverage(true));
     $('#calcPrem').addEventListener('click', ()=> calcPremium(true));
 
