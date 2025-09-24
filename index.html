@@ -7,8 +7,8 @@
 
   <!-- Favicon（表示安定のため複数定義） -->
   <link rel="icon" type="image/png" sizes="192x192" href="favicon192192.png" />
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon192192.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="favicon192192.png" />
+  <link rel="icon" type="image/png" sizes="32x32"  href="favicon192192.png" />
+  <link rel="icon" type="image/png" sizes="16x16"  href="favicon192192.png" />
   <link rel="apple-touch-icon" href="favicon192192.png" />
   <meta name="theme-color" content="#578899" />
 
@@ -24,7 +24,7 @@
       background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased;
     }
     .wrap{padding:max(12px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right))
-           calc(16px + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left)); max-width:780px; margin:0 auto;}
+           calc(16px + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left)); max-width:820px; margin:0 auto;}
 
     header{padding:8px 6px 2px;}
     .brand{display:flex; align-items:center; gap:10px;}
@@ -41,6 +41,8 @@
     .card h2{margin:0 0 10px; font-size:18px; font-weight:900; color:#324245; letter-spacing:.01em;}
 
     .label{font-size:15px; color:var(--muted); margin:0 0 6px 2px;}
+
+    /* 入力UI */
     .yen-input,.pctbox{
       display:flex; align-items:center; gap:8px; background:#f8fcfd; border:1px solid var(--border);
       border-radius:12px; padding:6px 8px;
@@ -51,16 +53,19 @@
       border:0; outline:none; background:transparent; font-size:18px; font-weight:800; color:var(--ink);
       letter-spacing:.02em; width:170px; text-align:right; font-feature-settings:"tnum"; font-variant-numeric:tabular-nums;
     }
-    .pctbox .unit{font-weight:800; color:var(--ink);}
-    input[type="range"]{-webkit-appearance:none; width:160px; height:24px; background:transparent;}
-    input[type="range"]::-webkit-slider-runnable-track{height:6px; background:linear-gradient(90deg,var(--accent-2),var(--accent)); border-radius:999px;}
-    input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none; width:20px; height:20px; border-radius:50%; background:#fff; border:2px solid var(--accent); margin-top:-7px; box-shadow:0 1px 6px rgba(0,0,0,.08);}
+    /* 薄いプレースホルダ */
+    input::placeholder{color:#8fa2a6; opacity:.42; font-weight:600;}
 
-    /* レイアウト */
+    /* CMR（同一行で横並び・折り返し禁止） */
+    .inline-actions{display:flex; align-items:center; gap:8px;}
+    .inline-actions.nowrap{flex-wrap:nowrap;}
+    #cmr{flex:1 1 auto; min-width:0; width:100%; height:24px; -webkit-appearance:none; background:transparent;}
+    #cmr::-webkit-slider-runnable-track{height:6px; background:linear-gradient(90deg,var(--accent-2),var(--accent)); border-radius:999px;}
+    #cmr::-webkit-slider-thumb{-webkit-appearance:none; width:20px; height:20px; border-radius:50%; background:#fff; border:2px solid var(--accent); margin-top:-7px; box-shadow:0 1px 6px rgba(0,0,0,.08);}
+
     .row-two{display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:end;}
-    @media (max-width:640px){ .row-two{grid-template-columns:1fr;} }
+    @media (max-width:680px){ .row-two{grid-template-columns:1fr;} }
 
-    .inline-actions{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
     .helper-btn{border:1px solid var(--border); background:#eef7f8; color:var(--accent); padding:6px 10px;
       border-radius:10px; font-size:13px; font-weight:800; cursor:pointer;}
 
@@ -70,9 +75,8 @@
       border:0; border-radius:12px; padding:10px 12px; font-size:15px;
     }
     .btn:active{transform:translateY(1px);}
-    .btn.secondary{background:#eef7f8; color:var(--accent); box-shadow:none; border:1px solid var(--border);}
 
-    /* チップ（期間切替） */
+    /* 期間チップ */
     .chip-row{display:flex; gap:8px; flex-wrap:wrap;}
     .chip{
       border:1px solid var(--border); background:#f3fafb; color:#1f3a3e; padding:6px 10px; border-radius:999px;
@@ -81,17 +85,21 @@
     .chip.active{background:#e0f1f5; border-color:#bcdde4; color:#0f2022;}
 
     .result{margin-top:12px;}
-    .amount{font-size:clamp(22px,7vw,34px); font-weight:900; color:var(--accent); margin:4px 0 6px; font-feature-settings:"tnum"; font-variant-numeric:tabular-nums;}
-    .statement{font-weight:900; color:#2b3a3d; margin:6px 0 2px;}
-    .kpi{display:flex; flex-wrap:wrap; gap:10px; align-items:center; color:#2b3a3d;}
+    .amount{font-size:clamp(22px,7vw,34px); font-weight:900; color:#2a6b7b; margin:4px 0 6px; font-feature-settings:"tnum"; font-variant-numeric:tabular-nums;}
+    .statement{font-weight:900; color:#2b3a3d; margin:6px 0 2px; line-height:1.6;}
+    .kpi{display:flex; flex-wrap:wrap; gap:10px; align-items:center; color:#2b3a3d; margin-top:6px;}
     .kpi .chip-like{background:#e9f6f8; border:1px dashed #8fb3c0; border-radius:12px; padding:8px 10px; font-weight:900;}
-    .kpi .muted{color:#5a6a6d; font-weight:700;}
-    .metrics{margin-top:6px; text-align:right; font-size:15px; color:#2b3a3d;}
-    .metrics b{font-weight:900;}
+    .formula{margin-top:6px; text-align:right; color:#6a7a7d; font-size:12px;}
 
-    /* 3ボタンを同一行に */
-    .action-row{display:flex; gap:8px; margin:14px 0 0;}
-    .action-row .btn{flex:1;}
+    /* 3ボタン：目立つスタイル */
+    .action-row{display:flex; gap:10px; margin:16px 0 0;}
+    .action-row .btn{
+      background:linear-gradient(180deg,#6ea6b6,#3f7c8e);
+      color:#fff; font-weight:900; box-shadow:0 6px 18px rgba(35,80,90,.18);
+      border:0; padding:12px 14px; font-size:15px; border-radius:12px;
+    }
+    .action-row .btn:hover{filter:brightness(1.03);}
+    .action-row .btn:active{transform:translateY(1px);}
 
     footer{margin:18px 4px 6px; text-align:center; color:#667; font-size:11px;}
     footer a{color:inherit; text-decoration:underline; text-underline-offset:2px;}
@@ -120,7 +128,7 @@
     <section class="card" aria-label="標準保障額の換算">
       <h2>標準保障額の換算</h2>
 
-      <!-- 1行目：左=標準保障額（コンパクト＋説明ボタン）、右=限界利益率（スライダー＋入力） -->
+      <!-- 1行目：左=標準保障額、右=限界利益率（スライダー＋入力 同一行） -->
       <div class="row-two">
         <div>
           <div class="label">標準保障額（円）</div>
@@ -135,7 +143,7 @@
 
         <div>
           <div class="label">御社の限界利益率（％）</div>
-          <div class="inline-actions">
+          <div class="inline-actions nowrap">
             <input id="cmr" type="range" min="5" max="95" step="0.1" value="54.7" />
             <div class="pctbox"><input id="cmrInput" class="pct" type="text" inputmode="decimal" value="54.7" /><span class="unit">%</span></div>
           </div>
@@ -174,9 +182,9 @@
         <div class="statement" id="stmtCov"></div>
         <div class="kpi">
           <span class="chip-like" id="pctAnnualCov" hidden>年間売上の — %</span>
-          <span class="muted">計算式：標準保障額 ÷ (限界利益率 / 100)</span>
+          <span class="chip-like" id="unitsCovChip" hidden>必要販売数：—</span>
         </div>
-        <div class="metrics" id="unitsCovLine" hidden>＝ 必要販売数（標準保障額）： <b id="unitsCov">—</b></div>
+        <div class="formula" id="formulaCov">計算式：標準保障額 ÷ (限界利益率 / 100)</div>
       </div>
     </section>
 
@@ -203,23 +211,23 @@
         <div class="statement" id="stmtPrem"></div>
         <div class="kpi">
           <span class="chip-like" id="pctSalesPrem" hidden>—</span>
-          <span class="muted" id="formulaPrem">計算式：必要保険料 ÷ (限界利益率 / 100)</span>
+          <span class="chip-like" id="unitsPremChip" hidden>必要販売数：—</span>
         </div>
-        <div class="metrics" id="unitsPremLine" hidden>＝ 必要販売数（保険料/月）： <b id="unitsPrem">—</b></div>
+        <div class="formula" id="formulaPrem">計算式：必要保険料 ÷ (限界利益率 / 100)</div>
       </div>
     </section>
 
-    <!-- 共通操作：3ボタン同一行 -->
+    <!-- 共通操作：3ボタン同一行（目立つ） -->
     <section class="action-row" aria-label="操作">
-      <button id="copy" class="btn secondary" type="button">コピー</button>
-      <button id="reset" class="btn secondary" type="button">リセット</button>
-      <button id="print" class="btn secondary" type="button">印刷</button>
+      <button id="copy" class="btn" type="button">コピー</button>
+      <button id="reset" class="btn" type="button">リセット</button>
+      <button id="print" class="btn" type="button">印刷</button>
     </section>
 
     <footer>
       Copyright (c) <span id="yyyy"></span>
       <a href="https://www.matsumoto-kaikei.or.jp/" target="_blank" rel="noopener">税理士法人松本会計事務所</a>
-      All Rights Reserved. / r3
+      All Rights Reserved. / r4
     </footer>
   </div>
 
@@ -236,33 +244,33 @@
 
   <script>
     const $ = s => document.querySelector(s);
-    const fmtJPY = n => n.toLocaleString('ja-JP',{style:'currency',currency:'JPY',maximumFractionDigits:0});
+    const fmtJPY   = n => n.toLocaleString('ja-JP',{style:'currency',currency:'JPY',maximumFractionDigits:0});
     const fmtPlain = n => n.toLocaleString('ja-JP',{maximumFractionDigits:0});
     const parsePct = t => { if(t==null) return NaN; const s=String(t).replace('%','').replace(',', '.').trim(); return Number(s); };
-    const clamp = (v,min,max)=>Math.max(min,Math.min(max,v));
-
+    const clamp    = (v,min,max)=>Math.max(min,Math.min(max,v));
     $('#yyyy').textContent = String(new Date().getFullYear());
 
-    // 要素参照
+    // 要素
     const covEl = $('#cov');
     const cmrR  = $('#cmr');
     const cmrI  = $('#cmrInput');
+
     const salesEl = $('#sales');
     const salesMonthly = $('#salesMonthly'), salesYearly = $('#salesYearly');
-    const avgEl = $('#avgPrice');
+    const avgEl   = $('#avgPrice');
 
-    const premEl = $('#prem');
+    const premEl  = $('#prem');
     const premMonthly = $('#premMonthly'), premYearly = $('#premYearly');
 
     const resCov = $('#resCov'), salesCovEl = $('#salesCov'), stmtCov = $('#stmtCov'),
-          pctAnnualCov = $('#pctAnnualCov'), unitsCovLine = $('#unitsCovLine'), unitsCov = $('#unitsCov');
+          pctAnnualCov = $('#pctAnnualCov'), unitsCovChip = $('#unitsCovChip');
 
     const resPrem = $('#resPrem'), salesPremEl = $('#salesPrem'), stmtPrem = $('#stmtPrem'),
-          pctSalesPrem = $('#pctSalesPrem'), unitsPremLine = $('#unitsPremLine'), unitsPrem = $('#unitsPrem'),
-          formulaPrem = $('#formulaPrem');
+          pctSalesPrem = $('#pctSalesPrem'), unitsPremChip = $('#unitsPremChip'),
+          formulaPrem = $('#formulaPrem'), formulaCov = $('#formulaCov');
 
     // CMR 永続化
-    const STORAGE_KEY_CMR='cmrPct_r3', DEFAULT_CMR=54.7;
+    const STORAGE_KEY_CMR='cmrPct_r4', DEFAULT_CMR=54.7;
     function loadCmr(){ try{ const v=Number(localStorage.getItem(STORAGE_KEY_CMR)); if(!isNaN(v)) return clamp(v,+cmrR.min,+cmrR.max);}catch{} return DEFAULT_CMR; }
     function saveCmr(v){ try{ localStorage.setItem(STORAGE_KEY_CMR, Number(v).toFixed(1)); }catch{} }
     const initCmr=loadCmr(); cmrR.value=initCmr.toFixed(1); cmrI.value=initCmr.toFixed(1);
@@ -286,42 +294,46 @@
       input.addEventListener('input', (e)=>{
         const raw = normalizeDigits(e.target.value);
         if(raw===''){ e.target.value=''; return; }
-        const num = Number(raw);
-        e.target.value = isNaN(num) ? '' : num.toLocaleString('ja-JP');
+        e.target.value = Number(raw).toLocaleString('ja-JP');
       });
       input.addEventListener('focus', (e)=>{
-        const digits = e.target.value.replace(/[^\d]/g,'');
-        if(digits) e.target.value = String(Number(digits));
+        const digits = e.target.value.replace(/[^\d]/g,''); if(digits) e.target.value = String(Number(digits));
       });
       input.addEventListener('blur', (e)=>{
-        const digits = e.target.value.replace(/[^\d]/g,'');
-        if(digits===''){ e.target.value=''; return; }
-        e.target.value = Number(digits).toLocaleString('ja-JP');
+        const digits = e.target.value.replace(/[^\d]/g,''); e.target.value = digits ? Number(digits).toLocaleString('ja-JP') : '';
       });
     }
     [covEl, salesEl, avgEl, premEl].forEach(attachMoneyFormatter);
 
-    // 文字列→数値
     const parseMoney = s => {
       if(s==null || s==='') return NaN;
       const digits = String(s).replace(/[^\d]/g,'');
       return digits ? Number(digits) : NaN;
     };
 
-    // トグルチップ
+    // 期間チップ
     function activateChip(chosen, other){
       chosen.classList.add('active'); chosen.setAttribute('aria-selected','true');
       other.classList.remove('active'); other.setAttribute('aria-selected','false');
     }
-    salesMonthly.addEventListener('click', ()=> activateChip(salesMonthly, salesYearly));
-    salesYearly .addEventListener('click', ()=> activateChip(salesYearly , salesMonthly));
-    premMonthly .addEventListener('click', ()=> activateChip(premMonthly , premYearly));
-    premYearly  .addEventListener('click', ()=> activateChip(premYearly  , premMonthly));
+    function updatePlaceholders(){
+      // 売上
+      if(salesYearly.classList.contains('active')) salesEl.placeholder = '例：120,000,000';
+      else                                         salesEl.placeholder = '例：10,000,000';
+      // 保険料
+      if(premYearly.classList.contains('active'))  premEl.placeholder  = '例：144,000';
+      else                                         premEl.placeholder  = '例：12,000';
+    }
+    salesMonthly.addEventListener('click', ()=>{ activateChip(salesMonthly, salesYearly); updatePlaceholders(); });
+    salesYearly .addEventListener('click', ()=>{ activateChip(salesYearly , salesMonthly); updatePlaceholders(); });
+    premMonthly .addEventListener('click', ()=>{ activateChip(premMonthly , premYearly ); updatePlaceholders(); });
+    premYearly  .addEventListener('click', ()=>{ activateChip(premYearly  , premMonthly); updatePlaceholders(); });
+    updatePlaceholders(); // 初期
 
     // 計算状態
-    let salesNeededCov=0;    // 保障額ベース（合計）
-    let salesNeededPrem=0;   // 保険料ベース（入力期間のまま）
-    let premPeriod='month';  // 'month' | 'year'
+    let salesNeededCov=0;   // 保障額ベース（合計）
+    let salesNeededPrem=0;  // 保険料ベース（入力期間のまま）
+    let premPeriod='month'; // 'month' | 'year'
 
     // 任意項目の反映
     function updateOptionalMetrics(){
@@ -340,10 +352,10 @@
           pctAnnualCov.hidden = true;
         }
         if(avg>0){
-          unitsCov.textContent = (salesNeededCov/avg).toFixed(1);
-          unitsCovLine.hidden = false;
+          unitsCovChip.textContent = `必要販売数：${(salesNeededCov/avg).toFixed(1)}`;
+          unitsCovChip.hidden = false;
         }else{
-          unitsCovLine.hidden = true; unitsCov.textContent = '—';
+          unitsCovChip.hidden = true;
         }
       }
 
@@ -362,10 +374,10 @@
           pctSalesPrem.hidden = true;
         }
         if(avg>0){
-          unitsPrem.textContent = (salesNeededPrem/avg).toFixed(1);
-          unitsPremLine.hidden = false;
+          unitsPremChip.textContent = `必要販売数：${(salesNeededPrem/avg).toFixed(1)}`;
+          unitsPremChip.hidden = false;
         }else{
-          unitsPremLine.hidden = true; unitsPrem.textContent='—';
+          unitsPremChip.hidden = true;
         }
       }
     }
@@ -382,7 +394,8 @@
       salesNeededCov = Math.ceil(cov / rate);
       resCov.hidden = false;
       salesCovEl.textContent = fmtJPY(salesNeededCov);
-      stmtCov.textContent = `上記標準保障額は御社の売上 ${fmtJPY(salesNeededCov)} に相当します。`;
+      stmtCov.textContent = `標準保障額 ${fmtJPY(cov)} は、御社の売上 ${fmtJPY(salesNeededCov)} に相当します。保険事故発生後短期間で被保険者無しに上記の売上を上げることはできますか？`;
+      formulaCov.textContent = '計算式：標準保障額 ÷ (限界利益率 / 100)';
 
       updateOptionalMetrics();
       resCov.scrollIntoView({behavior:'smooth', block:'center'});
@@ -403,14 +416,13 @@
 
       if(premPeriod==='month'){
         salesPremEl.textContent = `${fmtJPY(salesNeededPrem)} / 月`;
-        $('#unitsPremLine').firstChild.textContent = '＝ 必要販売数（保険料/月）： ';
         formulaPrem.textContent = '計算式：必要保険料(月) ÷ (限界利益率 / 100)';
+        stmtPrem.textContent = `必要保険料 ${fmtJPY(prem)} は、御社の（月間）売上 ${fmtJPY(salesNeededPrem)} に相当します。この売上を追加で上げれば、必要保険料をカバーすることができ、将来の不安が解消できます。`;
       }else{
         salesPremEl.textContent = `${fmtJPY(salesNeededPrem)} / 年`;
-        $('#unitsPremLine').firstChild.textContent = '＝ 必要販売数（保険料/年）： ';
         formulaPrem.textContent = '計算式：必要保険料(年) ÷ (限界利益率 / 100)';
+        stmtPrem.textContent = `必要保険料 ${fmtJPY(prem)} は、御社の（年間）売上 ${fmtJPY(salesNeededPrem)} に相当します。この売上を追加で上げれば、必要保険料をカバーすることができ、将来の不安が解消できます。`;
       }
-      stmtPrem.textContent = `上記必要保険料は御社の売上 ${fmtJPY(salesNeededPrem)} に相当します。`;
 
       updateOptionalMetrics();
       resPrem.scrollIntoView({behavior:'smooth', block:'center'});
@@ -420,7 +432,7 @@
     $('#calcCov').addEventListener('click', calcCoverage);
     $('#calcPrem').addEventListener('click', calcPremium);
 
-    // コピー
+    // クリップボード（新しい文面＆チップ反映）
     $('#copy').addEventListener('click', async ()=>{
       const cmrTxt = `${(+parsePct(cmrI.value)).toFixed(1)}%`;
       const lines = [];
@@ -428,13 +440,13 @@
         lines.push(`[標準保障額] ${salesCovEl.textContent}（CMR ${cmrTxt}）`);
         lines.push(stmtCov.textContent);
         if(!pctAnnualCov.hidden) lines.push(`・${pctAnnualCov.textContent}`);
-        if(!unitsCovLine.hidden) lines.push(`・${unitsCovLine.textContent}`);
+        if(!unitsCovChip.hidden) lines.push(`・${unitsCovChip.textContent}`);
       }
       if(!resPrem.hidden){
         lines.push(`[必要保険料] ${salesPremEl.textContent}（CMR ${cmrTxt}）`);
         lines.push(stmtPrem.textContent);
         if(!pctSalesPrem.hidden) lines.push(`・${pctSalesPrem.textContent}`);
-        if(!unitsPremLine.hidden) lines.push(`・${unitsPremLine.textContent}`);
+        if(!unitsPremChip.hidden) lines.push(`・${unitsPremChip.textContent}`);
       }
       const salesV = parseMoney(salesEl.value), avgV = parseMoney(avgEl.value);
       if(salesV>0){ const p = salesYearly.classList.contains('active')?'年額':'月額'; lines.push(`売上(${p}): ¥${fmtPlain(salesV)}`); }
@@ -455,12 +467,12 @@
       [covEl, salesEl, avgEl, premEl].forEach(el=> el.value='');
       activateChip(salesYearly, salesMonthly);
       activateChip(premMonthly, premYearly);
+      updatePlaceholders();
       const c=loadCmr(); cmrR.value=c.toFixed(1); cmrI.value=c.toFixed(1);
       salesNeededCov=0; salesNeededPrem=0;
       resCov.hidden=true; resPrem.hidden=true;
       pctAnnualCov.hidden=true; pctSalesPrem.hidden=true;
-      unitsCovLine.hidden=true; unitsPremLine.hidden=true;
-      unitsCov.textContent='—'; unitsPrem.textContent='—';
+      unitsCovChip.hidden=true; unitsPremChip.hidden=true;
       window.scrollTo({top:0, behavior:'smooth'});
     });
 
