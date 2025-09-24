@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>それ、売上に直すといくらですか？</title>
+
+  <!-- Favicon -->
+  <link rel="icon" href="favicon192192.png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="favicon192192.png" />
+  <meta name="theme-color" content="#578899" />
+
+  <style>
+    :root{
+      --bg:#f4f9fb; --card:#ffffff; --ink:#1e2a2d; --muted:#5a6a6d;
+      --accent:#578899; --accent-2:#7aa2b0; --shadow:0 10px 30px rgba(35,80,90,.12); --radius:16px;
+    }
+    html,body{height:100%;}
+    body{margin:0; font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic UI","YuGothic","Noto Sans JP","Segoe UI",Roboto,Arial,sans-serif;
+      background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased;}
+    .wrap{padding:max(12px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right))
+           calc(16px + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left)); max-width:560px; margin:0 auto;}
+
+    /* ヘッダー（ロゴ左、タイトル右） */
+    header{padding:8px 6px 2px;}
+    .brand{display:flex; align-items:center; gap:10px;}
+    .logo{height:48px; width:auto; object-fit:contain; flex:0 0 auto;}
+    .title{flex:1; min-width:0; font-weight:800; letter-spacing:.02em; line-height:1.2; margin:0;
+      white-space:nowrap; font-size:clamp(16px, 4.6vw, 24px);}
+    @media (max-width:360px){ .title{font-size:clamp(15px, 4.2vw, 20px);} }
+    .subtitle{color:var(--muted); font-size:12px; margin:6px 0 0 0;}
+
+    .card{background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px 16px; margin:12px 0 18px;}
+    .field{margin:10px 0 16px;}
+    .label{font-size:15px; color:var(--muted); margin:0 0 6px 2px;}
+    .label.big{font-size:16px; font-weight:700; color:#324245;}
+    .helper{font-size:12px; color:#6a7a7d; margin:4px 2px 0;}
+    .ref-title{margin:10px 2px 0; font-size:12px; color:#607c80;}
+
+    .row{display:flex; align-items:center; gap:12px; padding:4px 0; flex-wrap:wrap;}
+    .yen-input,.pctbox{display:flex; align-items:center; gap:8px; background:#f8fcfd; border:1px solid #d9eaed; border-radius:12px; padding:8px 10px;}
+    .yen-input .prefix{font-weight:700; color:var(--accent); border-right:1px solid #e6f1f3; padding-right:10px;}
+    input.money,input.pct{border:0; outline:none; background:transparent; font-size:20px; font-weight:800; color:var(--ink);
+      letter-spacing:.02em; width:140px; text-align:right; font-feature-settings:"tnum"; font-variant-numeric:tabular-nums;}
+    .pctbox .unit{font-weight:800; color:var(--ink);}
+
+    /* 限界利益率スライダー */
+    .range-row{display:flex; align-items:center; gap:12px; padding:8px 0;}
+    input[type="range"]{-webkit-appearance:none; width:100%; height:26px; background:transparent;}
+    input[type="range"]::-webkit-slider-runnable-track{height:6px; background:linear-gradient(90deg,var(--accent-2),var(--accent)); border-radius:999px;}
+    input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none; width:26px; height:26px; border-radius:50%; background:#fff; border:2px solid var(--accent); margin-top:-10px; box-shadow:0 1px 6px rgba(0,0,0,.08);}
+
+    /* 業種チップ */
+    .chip-grid{display:grid; gap:8px; margin-top:8px; grid-template-columns:repeat(4, minmax(0,1fr));}
+    @media (max-width:380px){.chip-grid{grid-template-columns:repeat(3, minmax(0,1fr));}}
+    .chip{display:flex; align-items:center; justify-content:space-between; border:1px solid #d9eaed; background:#f3fafb; color:var(--accent);
+      padding:8px 10px; border-radius:12px; font-size:12px; line-height:1.05; cursor:pointer;}
+    .chip .nm{font-weight:700;} .chip .val{font-weight:900; color:#1f3a3e; font-feature-settings:"tnum";}
+
+    .btn{background:linear-gradient(180deg,var(--accent-2),var(--accent)); color:#fff; font-weight:900; letter-spacing:.02em;
+      border:0; width:100%; border-radius:12px; padding:16px 18px; font-size:17px; box-shadow:var(--shadow);}
+    .btn:active{transform:translateY(1px);}
+    .btn.secondary{background:#eef7f8; color:var(--accent); box-shadow:none; border:1px solid #d9eaed;}
+    .btn-row{display:none; gap:8px; margin-top:12px;} .btn-row.show{display:flex;} .btn-row .btn{flex:1; padding:12px 10px; font-size:15px;}
+
+    .result{text-align:center; margin-top:16px;}
+    .result .label{font-size:16px; font-weight:800; color:#324245;}
+    .amount{font-size:clamp(22px,7vw,34px); font-weight:900; color:var(--accent); margin:8px 0 6px; font-feature-settings:"tnum"; font-variant-numeric:tabular-nums;}
+    .statement{margin-top:10px; background:#e9f6f8; border:1px dashed #8fb3c0; border-radius:12px; padding:10px;
+      color:#0f2022; font-weight:900; line-height:1.6; font-size:clamp(15px,4.6vw,20px);}
+    .statement .stmt-top{display:block;} .statement .stmt-bottom{display:block; margin-top:4px;}
+
+    /* 平均単価（任意）と必要販売数（右寄せ・直下） */
+    .avgrow{margin-top:8px; display:flex; align-items:center; justify-content:space-between; gap:10px;}
+    .avg-label{font-size:15px; font-weight:700; color:#324245;}
+    .yen-input.small .money{font-size:16px;}
+    .yen-input.small input::placeholder{color:#7f8d91; opacity:.55; font-weight:500;}
+    .metrics{margin-top:6px; text-align:right;}
+    .metrics .only{color:#2b3a3d; font-size:15px;}
+    .metrics .only b{font-weight:900;}
+
+    .note{margin-top:10px; color:#6a7a7d; font-size:12px;}
+    footer{margin:18px 4px 6px; text-align:center; color:#667; font-size:11px;}
+    footer a{color:inherit; text-decoration:underline; text-underline-offset:2px;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <img src="ロゴ.jpg" alt="松本会計事務所ロゴ" class="logo" />
+        <h1 class="title">それ、売上に直すといくらですか？</h1>
+      </div>
+      <div class="subtitle">保険の「標準保障額」と「必要保険料（月額）」を、御社の売上相当額に換算します。</div>
+    </header>
+
+    <section class="card" aria-label="入力">
+      <!-- ① 標準保障額 -->
+      <div class="field">
+        <div class="label big">① 標準保障額（円）</div>
+        <div class="row">
+          <div class="yen-input">
+            <span class="prefix">¥</span>
+            <input id="cov" class="money" type="text" inputmode="numeric" placeholder="例：5,000,000" autocomplete="off" />
+          </div>
+        </div>
+      </div>
+
+      <!-- ② 必要保険料（月額） -->
+      <div class="field">
+        <div class="label big">② 必要保険料（円／月）</div>
+        <div class="row">
+          <div class="yen-input">
+            <span class="prefix">¥</span>
+            <input id="prem" class="money" type="text" inputmode="numeric" placeholder="例：12,000" autocomplete="off" />
+          </div>
+        </div>
+      </div>
+
+      <!-- ③ 限界利益率 -->
+      <div class="field">
+        <div class="label big">③ 御社の限界利益率（％）</div>
+        <div class="helper">※変動損益計算書もしくは月次決算速報サービスにてご確認ください</div>
+        <div class="range-row">
+          <input id="cmr" type="range" min="5" max="95" step="0.1" value="54.7" />
+          <div class="pctbox"><input id="cmrInput" class="pct" type="text" inputmode="decimal" value="54.7" /><span class="unit">%</span></div>
+        </div>
+
+        <div class="ref-title">参考：産業ごとの全国平均</div>
+        <div class="chip-grid">
+          <button class="chip" type="button" data-pct="54.7"><span class="nm">全産業</span><span class="val">54.7%</span></button>
+          <button class="chip" type="button" data-pct="65.7"><span class="nm">漁業</span><span class="val">65.7%</span></button>
+          <button class="chip" type="button" data-pct="48.0"><span class="nm">建設業</span><span class="val">48.0%</span></button>
+          <button class="chip" type="button" data-pct="58.0"><span class="nm">製造業</span><span class="val">58.0%</span></button>
+          <button class="chip" type="button" data-pct="29.7"><span class="nm">卸売業</span><span class="val">29.7%</span></button>
+          <button class="chip" type="button" data-pct="35.7"><span class="nm">小売業</span><span class="val">35.7%</span></button>
+          <button class="chip" type="button" data-pct="82.4"><span class="nm">宿泊業</span><span class="val">82.4%</span></button>
+          <button class="chip" type="button" data-pct="64.2"><span class="nm">飲食業</span><span class="val">64.2%</span></button>
+        </div>
+      </div>
+
+      <div class="field">
+        <button id="calc" class="btn" type="button">御社の売上相当額を計算</button>
+      </div>
+
+      <!-- 結果：標準保障額 -->
+      <div class="result" id="resCov" hidden>
+        <div class="label big">御社の売上相当額（標準保障額）</div>
+        <div class="amount" id="salesCov"></div>
+        <div class="statement" id="stmtCov"></div>
+        <div class="note">※ 計算式：<b>必要売上（保障）＝ 標準保障額 ÷（限界利益率 / 100）</b></div>
+      </div>
+
+      <!-- 結果：必要保険料（月額） -->
+      <div class="result" id="resPrem" hidden>
+        <div class="label big">御社の売上相当額（月額保険料）</div>
+        <div class="amount" id="salesPrem"></div>
+        <div class="statement" id="stmtPrem"></div>
+
+        <!-- 平均単価（任意） → 必要販売数（右寄せ・直下） -->
+        <div class="avgrow" id="avgRow" hidden>
+          <div class="avg-label">平均単価（任意）</div>
+          <div class="yen-input small">
+            <span class="prefix">¥</span>
+            <input id="avgPrice" class="money" type="text" inputmode="numeric" placeholder="例：10,000" autocomplete="off" />
+          </div>
+        </div>
+        <div class="metrics" id="metrics" hidden>
+          <div class="only">＝ 必要販売数： <b id="unitsNeeded">—</b></div>
+        </div>
+
+        <div class="note">
+          ※ 計算式：<b>必要売上（月額）＝ 必要保険料 ÷（限界利益率 / 100）</b><br>
+          参考として 1か月＝<b>25営業日</b> で日次換算を提示します。
+        </div>
+      </div>
+
+      <!-- 操作用ボタン（計算後に表示） -->
+      <div class="btn-row" id="actionRow">
+        <button id="copy" class="btn secondary" type="button">コピー</button>
+        <button id="reset" class="btn secondary" type="button">リセット</button>
+        <button id="print" class="btn secondary" type="button">印刷</button>
+      </div>
+    </section>
+
+    <footer>
+      Copyright (c) <span id="yyyy"></span>
+      <a href="https://www.matsumoto-kaikei.or.jp/" target="_blank" rel="noopener">税理士法人松本会計事務所</a>
+      All Rights Reserved. / r22
+    </footer>
+  </div>
+
+  <script>
+    const $ = s => document.querySelector(s);
+    const BUSINESS_DAYS = 25;
+    const STORAGE_KEY_CMR = 'cmrPct_v1';
+    const DEFAULT_CMR = 54.7;
+
+    const covEl = $('#cov');      // 標準保障額
+    const premEl = $('#prem');    // 必要保険料（月額）
+    const cmrRange = $('#cmr'), cmrInput = $('#cmrInput');
+
+    const resCov = $('#resCov'), salesCov = $('#salesCov'), stmtCov = $('#stmtCov');
+    const resPrem = $('#resPrem'), salesPrem = $('#salesPrem'), stmtPrem = $('#stmtPrem');
+
+    const avgRow = $('#avgRow'), avgPriceEl = $('#avgPrice'), metrics = $('#metrics'), unitsNeededEl = $('#unitsNeeded');
+    const actionRow = $('#actionRow');
+
+    let salesNeededCov = 0;   // 保障額 対応の必要売上（1回）
+    let salesNeededPrem = 0;  // 保険料 対応の必要売上（1か月）
+
+    $('#yyyy').textContent = String(new Date().getFullYear());
+
+    // ========== 共通ユーティリティ ==========
+    function parseMoney(text){ if(text==null) return NaN; return Number(String(text).replace(/[^\d.-]/g,'')); }
+    function formatJPY(n){ return n.toLocaleString('ja-JP',{style:'currency',currency:'JPY',maximumFractionDigits:0}); }
+    function formatPlainJPY(n){ return n.toLocaleString('ja-JP',{maximumFractionDigits:0}); }
+    function parsePct(text){ if(text==null) return NaN; const t = String(text).replace('%','').replace(',', '.').trim(); return Number(t); }
+    function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+    function normalizeNumericInput(str){
+      if(!str) return '';
+      // 全角数字→半角
+      str = str.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+      // ①〜⑨/⓪ → 半角
+      const map = {'⓪':'0','①':'1','②':'2','③':'3','④':'4','⑤':'5','⑥':'6','⑦':'7','⑧':'8','⑨':'9'};
+      str = str.replace(/[⓪①②③④⑤⑥⑦⑧⑨]/g, s => map[s] || s);
+      // 数字以外除去（カンマ等）
+      return str.replace(/[^\d]/g,'');
+    }
+
+    // ========== 限界利益率の永続化 ==========
+    function loadCmr(){ try{ const v=parsePct(localStorage.getItem(STORAGE_KEY_CMR)); if(!isNaN(v)) return clamp(v, +cmrRange.min, +cmrRange.max);}catch{} return DEFAULT_CMR; }
+    function saveCmr(v){ try{ localStorage.setItem(STORAGE_KEY_CMR, Number(v).toFixed(1)); }catch{} }
+
+    // 初期化
+    const initCmr = loadCmr();
+    cmrRange.value = initCmr.toFixed(1);
+    cmrInput.value = initCmr.toFixed(1);
+
+    // CMR 双方向
+    cmrRange.addEventListener('input', ()=>{
+      const v = +cmrRange.value; if(document.activeElement===cmrInput) return;
+      cmrInput.value = v.toFixed(1); saveCmr(v);
+    });
+    function commitCmrInput(){
+      const v = parsePct(cmrInput.value);
+      if(isNaN(v)){ cmrInput.value = (+cmrRange.value).toFixed(1); return; }
+      const clamped = clamp(v, +cmrRange.min, +cmrRange.max);
+      cmrRange.value = clamped.toFixed(1);
+      cmrInput.value = clamped.toFixed(1);
+      saveCmr(clamped);
+    }
+    cmrInput.addEventListener('input', ()=>{ const v=parsePct(cmrInput.value); if(!isNaN(v)&&v>=+cmrRange.min&&v<=+cmrRange.max){ cmrRange.value = v.toFixed(1);} });
+    cmrInput.addEventListener('blur', commitCmrInput);
+
+    // 業種チップ
+    document.querySelectorAll('.chip-grid .chip').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const v = +btn.dataset.pct;
+        cmrRange.value = v.toFixed(1);
+        cmrInput.value = v.toFixed(1);
+        saveCmr(v);
+        cmrInput.blur();
+      });
+    });
+
+    // 金額入力：スマホ対策（入力中は正規化のみ／blurで体裁整形）
+    [covEl, premEl, avgPriceEl].forEach(el=>{
+      if(!el) return;
+      el.addEventListener('input', (e)=>{
+        const v = e.target.value;
+        const norm = normalizeNumericInput(v);
+        if(v !== norm){
+          const atEnd = document.activeElement === e.target && e.target.selectionStart === v.length;
+          e.target.value = norm;
+          if(atEnd){ const L = e.target.value.length; requestAnimationFrame(()=>e.target.setSelectionRange(L, L)); }
+        }
+        if(e.target===avgPriceEl){ updateUnits(); }
+      });
+      el.addEventListener('focus', (e)=>{
+        const n = parseMoney(e.target.value);
+        if(!isNaN(n) && n>0) e.target.value = String(n);
+      });
+      el.addEventListener('blur', (e)=>{
+        const n = parseMoney(e.target.value);
+        e.target.value = isNaN(n) || n<=0 ? '' : formatPlainJPY(n);
+        if(e.target===avgPriceEl){ updateUnits(); }
+      });
+    });
+
+    // 計算
+    function calc(){
+      commitCmrInput();
+      const pct = parsePct(cmrInput.value);
+      if(isNaN(pct) || pct<=0){ alert('限界利益率を正しく入力してください。'); cmrInput.focus(); return; }
+      const rate = pct / 100;
+
+      const cov = parseMoney(covEl.value);
+      const prem = parseMoney(premEl.value);
+
+      if(!isNaN(cov) && cov>0){
+        salesNeededCov = Math.ceil(cov / rate);
+        salesCov.textContent = formatJPY(salesNeededCov);
+        stmtCov.innerHTML = `<span class="stmt-top">${formatJPY(cov)} の標準保障額は、</span><span class="stmt-bottom">御社の売上 ${formatJPY(salesNeededCov)} に相当します。</span>`;
+        resCov.hidden = false;
+      }else{
+        resCov.hidden = true; salesNeededCov = 0;
+      }
+
+      if(!isNaN(prem) && prem>0){
+        salesNeededPrem = Math.ceil(prem / rate);
+        salesPrem.textContent = `${formatJPY(salesNeededPrem)} / 月`;
+        stmtPrem.innerHTML = `<span class="stmt-top">月額 ${formatJPY(prem)} の保険料は、</span><span class="stmt-bottom">御社の売上 ${formatJPY(salesNeededPrem)} / 月 に相当します。</span>`;
+        resPrem.hidden = false;
+        avgRow.hidden = false;
+        metrics.hidden = false;
+        updateUnits();
+      }else{
+        resPrem.hidden = true; salesNeededPrem = 0; avgRow.hidden = true; metrics.hidden = true; unitsNeededEl.textContent = '—';
+      }
+
+      if(resCov.hidden && resPrem.hidden){
+        alert('標準保障額または必要保険料（月額）のいずれかを入力してください。');
+        return;
+      }
+
+      actionRow.classList.add('show');
+      (resPrem.hidden ? resCov : resPrem).scrollIntoView({behavior:'smooth', block:'center'});
+    }
+    $('#calc').addEventListener('click', calc);
+
+    // 必要販売数（＝ 月間の売上相当額 ÷ 平均単価）
+    function updateUnits(){
+      if(!salesNeededPrem){ unitsNeededEl.textContent='—'; return; }
+      const avg = parseMoney(avgPriceEl.value);
+      if(!isNaN(avg) && avg>0){
+        const units = salesNeededPrem / avg;
+        unitsNeededEl.textContent = units.toFixed(1);
+      }else{
+        unitsNeededEl.textContent = '—';
+      }
+    }
+
+    // コピー
+    $('#copy').addEventListener('click', async ()=>{
+      const lines = [];
+      const pct = `${(+cmrInput.value).toFixed(1)}%`;
+      if(!resCov.hidden){
+        lines.push(`[標準保障額] ${salesCov.textContent}（CMR ${pct}）`, stmtCov.textContent.replace(/\s+/g,' '));
+      }
+      if(!resPrem.hidden){
+        lines.push(`[必要保険料(月)] ${salesPrem.textContent}（CMR ${pct}）`, stmtPrem.textContent.replace(/\s+/g,' '));
+        const avgTxt = avgPriceEl.value ? `平均単価: ¥${avgPriceEl.value}` : '平均単価: 未入力';
+        lines.push(`＝ 必要販売数： ${unitsNeededEl.textContent}`, avgTxt);
+      }
+      const text = lines.join('\n');
+      try{
+        if(navigator.clipboard?.writeText){ await navigator.clipboard.writeText(text); alert('結果をコピーしました。'); }
+        else{
+          const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta);
+          ta.select(); document.execCommand('copy'); document.body.removeChild(ta); alert('結果をコピーしました。');
+        }
+      }catch{ alert('コピーに失敗しました。'); }
+    });
+
+    // リセット
+    $('#reset').addEventListener('click', ()=>{
+      covEl.value = ''; premEl.value = ''; avgPriceEl.value = '';
+      const cmr0 = loadCmr(); cmrRange.value = cmr0.toFixed(1); cmrInput.value = cmr0.toFixed(1);
+      resCov.hidden = true; resPrem.hidden = true; avgRow.hidden = true; metrics.hidden = true; unitsNeededEl.textContent = '—';
+      salesNeededCov = 0; salesNeededPrem = 0;
+      actionRow.classList.remove('show');
+      window.scrollTo({top:0, behavior:'smooth'});
+    });
+
+    // 印刷
+    $('#print').addEventListener('click', ()=>{ if(resCov.hidden && resPrem.hidden){ return; } window.print(); });
+  </script>
+</body>
+</html>
