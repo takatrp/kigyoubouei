@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>標準保障額・保険料売上換算ツール</title>
 
-  <!-- Favicon（互換性最大化：ICO/PNGの両方を用意） -->
+  <!-- Favicon（ICO/PNG 両対応） -->
   <link rel="icon" href="favicon.ico" sizes="any" />
   <link rel="shortcut icon" href="favicon.ico" />
   <link rel="icon" type="image/png" sizes="192x192" href="favicon192192.png" />
@@ -19,10 +19,8 @@
       --border:#d9eaed; --blue:#1a6ea0;
     }
     html,body{height:100%;}
-    body{
-      margin:0; font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic UI","YuGothic","Noto Sans JP","Segoe UI",Roboto,Arial,sans-serif;
-      background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased;
-    }
+    body{margin:0; font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic UI","YuGothic","Noto Sans JP","Segoe UI",Roboto,Arial,sans-serif;
+      background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased;}
     .wrap{padding:max(12px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right))
            calc(16px + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left)); max-width:820px; margin:0 auto;}
 
@@ -71,13 +69,12 @@
     .amount{font-size:clamp(22px,7vw,34px); font-weight:900; color:#2a6b7b; margin:4px 0 6px; font-feature-settings:"tnum"; font-variant-numeric:tabular-nums;}
     .statement{font-weight:900; color:#2b3a3d; margin:6px 0 2px; line-height:1.6;}
     .blue{color:#1a6ea0;} .up1{font-size:1.1em;}
+    .note-line{color:#000;}  /* ← 追加行は黒色・通常サイズ */
 
-    /* KPI行（左：指標チップ / 右端：計算式） */
     .kpi{display:flex; align-items:center; flex-wrap:wrap; gap:10px;}
     .chip-like{background:#e9f6f8; border:1px dashed #8fb3c0; border-radius:12px; padding:8px 10px; font-weight:900;}
     .formula-chip{margin-left:auto; font-size:12px; color:#6a7a7d; border:0; background:transparent; padding:0;}
 
-    /* 操作3ボタン（スマホでも横並び） */
     .action-row{display:flex; gap:10px; margin:16px 0 0; flex-wrap:nowrap;}
     .action-row .btn{background:linear-gradient(180deg,#6ea6b6,#3f7c8e); color:#fff; font-weight:900; box-shadow:0 6px 18px rgba(35,80,90,.18);
       border:0; padding:12px 14px; font-size:15px; border-radius:12px; flex:1 1 33%; white-space:nowrap;}
@@ -85,12 +82,9 @@
     footer{margin:18px 4px 6px; text-align:center; color:#667; font-size:11px;}
     footer a{color:inherit; text-decoration:underline; text-underline-offset:2px;}
 
-    /* 印刷：画面表示をそのまま（最小限の余白のみ） */
+    /* 印刷：画面表示そのまま */
     @page { size: auto; margin: 12mm; }
-    @media print{
-      body{background:#fff;}
-      .card{box-shadow:none;}
-    }
+    @media print{ body{background:#fff;} .card{box-shadow:none;} }
   </style>
 </head>
 <body>
@@ -201,7 +195,7 @@
     <footer>
       Copyright (c) <span id="yyyy"></span>
       <a href="https://www.matsumoto-kaikei.or.jp/" target="_blank" rel="noopener">税理士法人松本会計事務所</a>
-      All Rights Reserved. / r8
+      All Rights Reserved. / r9
     </footer>
   </div>
 
@@ -324,8 +318,11 @@
       const salesNeededCov = Math.ceil(cov / rate);
       resCov.hidden=false;
       salesCovEl.textContent = fmtJPY(salesNeededCov);
-      stmtCov.innerHTML = `標準保障額 ${fmtJPY(cov)} は、御社の売上 ${fmtJPY(salesNeededCov)} に相当します。<br>
-        <span class="blue up1">保険事故発生後、短期間のうちに、被保険者不在で、${fmtJPY(salesNeededCov)} の売上を上げることはできますか？</span>`;
+      // 追加行（黒）→ 青行 の順で表示
+      stmtCov.innerHTML =
+        `標準保障額 ${fmtJPY(cov)} は、御社の売上 ${fmtJPY(salesNeededCov)} に相当します。<br>`+
+        `<span class="note-line">標準保障額は、保険事故発生後に短期間で必要と想定される金額です。</span><br>`+
+        `<span class="blue up1">保険事故発生後、短期間のうちに、被保険者不在で、${fmtJPY(salesNeededCov)} の売上を上げることはできますか？</span>`;
 
       updateOptionalMetrics();
       autoCov=true;
@@ -337,7 +334,7 @@
       const rate = parsePct(cmrI.value)/100;
       const prem = parseMoney(premEl.value);
       const isMonth = premMonthly.classList.contains('active');
-      if(!(rate>0)){ alert('限界利益率を正しく入力してください。'); cmrI.focus(); return; }
+      if(!(rate>0)){ alert('限界利益率を正しく入力してください。'); premEl.blur(); return; }
       if(!(prem>0)){ alert('必要保険料を入力してください。'); premEl.focus(); return; }
 
       const salesNeededPrem = Math.ceil(prem / rate);
@@ -345,10 +342,11 @@
 
       salesPremEl.textContent = isMonth ? `${fmtJPY(salesNeededPrem)} / 月` : `${fmtJPY(salesNeededPrem)} / 年`;
       const periodLabel = isMonth ? '月' : '年';
-      stmtPrem.innerHTML = (isMonth
-        ? `必要保険料 ${fmtJPY(prem)} は、御社の月間売上 ${fmtJPY(salesNeededPrem)} に相当します。`
-        : `必要保険料 ${fmtJPY(prem)} は、御社の年間売上 ${fmtJPY(salesNeededPrem)} に相当します。`)
-        + `<br><span class="blue up1">${periodLabel}${fmtJPY(salesNeededPrem)} の売上を追加で上げれば、必要な保険料をカバーすることができ、将来の不安が解消できます。</span>`;
+      stmtPrem.innerHTML =
+        (isMonth
+          ? `必要保険料 ${fmtJPY(prem)} は、御社の月間売上 ${fmtJPY(salesNeededPrem)} に相当します。`
+          : `必要保険料 ${fmtJPY(prem)} は、御社の年間売上 ${fmtJPY(salesNeededPrem)} に相当します。`) +
+        `<br><span class="blue up1">${periodLabel}${fmtJPY(salesNeededPrem)} の売上を追加で上げれば、必要な保険料をカバーすることができ、将来の不安が解消できます。</span>`;
 
       updateOptionalMetrics();
       autoPrem=true;
@@ -375,7 +373,7 @@
         if(!pctSalesPrem.hidden) lines.push(`・${pctSalesPrem.textContent}`);
         if(!unitsPremChip.hidden) lines.push(`・${unitsPremChip.textContent}`);
       }
-      const salesV = parseMoney(salesEl.value), avgV = parseMoney(avgEl.value);
+      const salesV = Number(String(salesEl.value).replace(/[^\d]/g,'')), avgV = Number(String(avgEl.value).replace(/[^\d]/g,''));
       if(salesV>0){ const p = salesYearly.classList.contains('active')?'年額':'月額'; lines.push(`売上(${p}): ¥${fmtPlain(salesV)}`); }
       if(avgV>0){ lines.push(`平均単価: ¥${fmtPlain(avgV)}`); }
       const text = lines.join('\n');
@@ -402,7 +400,7 @@
       window.scrollTo({top:0, behavior:'smooth'});
     });
 
-    // 印刷 / PDF保存（ブラウザの印刷でPDF保存可）
+    // 印刷 / PDF保存
     $('#print').addEventListener('click', ()=> window.print() );
 
     // モーダル
