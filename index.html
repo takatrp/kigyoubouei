@@ -53,7 +53,7 @@
     .row-two{display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:end;}
     @media (max-width:680px){ .row-two{grid-template-columns:1fr;} }
 
-    /* ← ここを調整：スマホで折り返さず・少し小さく */
+    /* 「標準保障額とは」ボタン：スマホで折返さない＆少し小さく */
     .helper-btn{
       border:1px solid var(--border); background:#eef7f8; color:#2a6b7b;
       padding:6px 10px; border-radius:10px; font-size:13px; font-weight:800;
@@ -77,7 +77,7 @@
     .amount{font-size:clamp(22px,7vw,34px); font-weight:900; color:#2a6b7b; margin:4px 0 6px; font-feature-settings:"tnum"; font-variant-numeric:tabular-nums;}
     .statement{font-weight:900; color:var(--ink); margin:6px 0 2px; line-height:1.6;}
     .blue{color:#1a6ea0;} .up1{font-size:1.1em;}
-    .note-line{color:inherit;} /* ← 1行目と同じ色に合わせる */
+    .note-line{color:inherit;} /* 1行目と同色 */
 
     .kpi{display:flex; align-items:center; flex-wrap:wrap; gap:10px;}
     .chip-like{background:#e9f6f8; border:1px dashed #8fb3c0; border-radius:12px; padding:8px 10px; font-weight:900;}
@@ -203,7 +203,7 @@
     <footer>
       Copyright (c) <span id="yyyy"></span>
       <a href="https://www.matsumoto-kaikei.or.jp/" target="_blank" rel="noopener">税理士法人松本会計事務所</a>
-      All Rights Reserved. / r11
+      All Rights Reserved. / r12
     </footer>
   </div>
 
@@ -222,6 +222,7 @@
     const $ = s => document.querySelector(s);
     const fmtJPY = n => n.toLocaleString('ja-JP',{style:'currency',currency:'JPY',maximumFractionDigits:0});
     const fmtPlain = n => n.toLocaleString('ja-JP',{maximumFractionDigits:0});
+    const fmt1 = n => n.toLocaleString('ja-JP',{minimumFractionDigits:1, maximumFractionDigits:1}); // ← 必要販売数をカンマ＋小数1桁
     const parsePct = t => { if(t==null) return NaN; const s=String(t).replace('%','').replace(',', '.').trim(); return Number(s); };
     $('#yyyy').textContent = String(new Date().getFullYear());
 
@@ -236,7 +237,7 @@
     const resPrem=$('#resPrem'), salesPremEl=$('#salesPrem'), stmtPrem=$('#stmtPrem');
     const pctSalesPrem=$('#pctSalesPrem'), unitsPremChip=$('#unitsPremChip');
 
-    // 既定CMR
+    // 既定CMR 54.7%
     function setCmr(v){ cmrR.value=Number(v).toFixed(1); cmrI.value=Number(v).toFixed(1); }
     setCmr(54.7);
     cmrR.addEventListener('input', ()=>{ cmrI.value=(+cmrR.value).toFixed(1); if(autoAny()) autoRecalc(); });
@@ -259,7 +260,7 @@
     const parseMoney = s => { if(!s) return NaN; const d=String(s).replace(/[^\d]/g,''); return d?Number(d):NaN; };
 
     // チップ切替 & プレースホルダ
-    function activateChip(on,off){ on.classList.add('active'); off.classList.remove('active'); }
+    function activateChip(on,off){ on.classList.add('active'); on.setAttribute('aria-selected','true'); off.classList.remove('active'); off.setAttribute('aria-selected','false'); }
     function updatePlaceholders(){
       salesEl.placeholder = salesYearly.classList.contains('active') ? '例：120,000,000' : '例：10,000,000';
       premEl.placeholder  = premYearly.classList.contains('active')  ? '例：144,000'    : '例：12,000';
@@ -275,7 +276,7 @@
     const autoAny = ()=> autoCov || autoPrem;
     function autoRecalc(){ if(autoCov) calcCoverage(false); if(autoPrem) calcPremium(false); }
 
-    // 任意KPI
+    // 任意KPI（％・必要販売数）
     function updateOptionalMetrics(){
       const avg = parseMoney(avgEl.value);
       const salesVal = parseMoney(salesEl.value);
@@ -291,7 +292,7 @@
         }else{ pctAnnualCov.hidden = true; }
         if(avg>0){
           const covVal = Number(String(salesCovEl.textContent).replace(/[^\d]/g,''));
-          unitsCovChip.textContent = `必要販売数：${(covVal/avg).toFixed(1)}`;
+          unitsCovChip.textContent = `必要販売数：${fmt1(covVal/avg)}`;
           unitsCovChip.hidden = false;
         }else{ unitsCovChip.hidden = true; }
       }
@@ -310,7 +311,7 @@
         }else{ pctSalesPrem.hidden = true; }
         if(avg>0){
           const premVal = Number(String(salesPremEl.textContent).replace(/[^\d]/g,''));
-          unitsPremChip.textContent = `必要販売数：${(premVal/avg).toFixed(1)}`;
+          unitsPremChip.textContent = `必要販売数：${fmt1(premVal/avg)}`;
           unitsPremChip.hidden = false;
         }else{ unitsPremChip.hidden = true; }
       }
@@ -360,7 +361,7 @@
       if(scroll) resPrem.scrollIntoView({behavior:'smooth', block:'center'});
     }
 
-    // クリック
+    // ボタン
     $('#calcCov').addEventListener('click', ()=> calcCoverage(true));
     $('#calcPrem').addEventListener('click', ()=> calcPremium(true));
 
@@ -407,7 +408,7 @@
       window.scrollTo({top:0, behavior:'smooth'});
     });
 
-    // 印刷 / PDF保存
+    // 印刷 / PDF保存（ブラウザ機能）
     $('#print').addEventListener('click', ()=> window.print() );
 
     // モーダル
