@@ -68,10 +68,22 @@
       border:0; border-radius:12px; padding:10px 12px; font-size:15px;}
     .btn:active{transform:translateY(1px);}
 
+    /* ▼ チップの色味（非選択をより淡く） */
     .chip-row{display:flex; gap:8px; flex-wrap:wrap;}
-    .chip{border:1px solid var(--border); background:#f3fafb; color:#1f3a3e; padding:6px 10px; border-radius:999px;
-      font-size:12px; font-weight:900; cursor:pointer; user-select:none;}
-    .chip.active{background:#e0f1f5; border-color:#bcdde4; color:#0f2022;}
+    .chip{
+      border:1px solid #e6f3f7;           /* 薄い枠線 */
+      background:#f7fbfd;                 /* ごく淡い水色 */
+      color:#7aa2b0;                      /* 文字も淡く */
+      padding:6px 10px; border-radius:999px;
+      font-size:12px; font-weight:900; cursor:pointer; user-select:none;
+      transition:background-color .15s, color .15s, border-color .15s;
+    }
+    .chip:hover{background:#f1f8fb;}
+    .chip.active{
+      background:#cfe7ef;                 /* 選択は少し濃く */
+      border-color:#9ecbd9;
+      color:#0f4f63;                      /* 文字は濃く */
+    }
 
     .result{margin-top:12px;}
     .amount{font-size:clamp(22px,7vw,34px); font-weight:900; color:#2a6b7b; margin:4px 0 6px; font-feature-settings:"tnum"; font-variant-numeric:tabular-nums;}
@@ -83,9 +95,16 @@
     .chip-like{background:#e9f6f8; border:1px dashed #8fb3c0; border-radius:12px; padding:8px 10px; font-weight:900;}
     .formula-chip{margin-left:auto; font-size:12px; color:#6a7a7d; border:0; background:transparent; padding:0;}
 
+    /* ▼ 操作3ボタンを淡い色味へ（添付の参考色に寄せる） */
     .action-row{display:flex; gap:10px; margin:16px 0 0; flex-wrap:nowrap;}
-    .action-row .btn{background:linear-gradient(180deg,#6ea6b6,#3f7c8e); color:#fff; font-weight:900; box-shadow:0 6px 18px rgba(35,80,90,.18);
-      border:0; padding:12px 14px; font-size:15px; border-radius:12px; flex:1 1 33%; white-space:nowrap;}
+    .action-row .btn{
+      background:#eef7f9;                 /* 淡い水色 */
+      color:#3f7c8e;                       /* 文字は落ち着いた青 */
+      border:1px solid #cfe3ea;            /* 薄い枠線 */
+      box-shadow:none;
+      padding:12px 14px; font-size:15px; border-radius:12px; flex:1 1 33%; white-space:nowrap;
+    }
+    .action-row .btn:hover{background:#e6f2f6;}
 
     footer{margin:18px 4px 6px; text-align:center; color:#667; font-size:11px;}
     footer a{color:inherit; text-decoration:underline; text-underline-offset:2px;}
@@ -203,7 +222,7 @@
     <footer>
       Copyright (c) <span id="yyyy"></span>
       <a href="https://www.matsumoto-kaikei.or.jp/" target="_blank" rel="noopener">税理士法人松本会計事務所</a>
-      All Rights Reserved. / r12
+      All Rights Reserved. / r13
     </footer>
   </div>
 
@@ -222,7 +241,7 @@
     const $ = s => document.querySelector(s);
     const fmtJPY = n => n.toLocaleString('ja-JP',{style:'currency',currency:'JPY',maximumFractionDigits:0});
     const fmtPlain = n => n.toLocaleString('ja-JP',{maximumFractionDigits:0});
-    const fmt1 = n => n.toLocaleString('ja-JP',{minimumFractionDigits:1, maximumFractionDigits:1}); // ← 必要販売数をカンマ＋小数1桁
+    const fmt1 = n => n.toLocaleString('ja-JP',{minimumFractionDigits:1, maximumFractionDigits:1});
     const parsePct = t => { if(t==null) return NaN; const s=String(t).replace('%','').replace(',', '.').trim(); return Number(s); };
     $('#yyyy').textContent = String(new Date().getFullYear());
 
@@ -408,7 +427,7 @@
       window.scrollTo({top:0, behavior:'smooth'});
     });
 
-    // 印刷 / PDF保存（ブラウザ機能）
+    // 印刷 / PDF保存
     $('#print').addEventListener('click', ()=> window.print() );
 
     // モーダル
