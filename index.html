@@ -68,39 +68,40 @@
       border:0; border-radius:12px; padding:10px 12px; font-size:15px;}
     .btn:active{transform:translateY(1px);}
 
-    /* ▼ チップの色味（非選択をより淡く） */
+    /* ▼ チップ（非選択を淡く） */
     .chip-row{display:flex; gap:8px; flex-wrap:wrap;}
     .chip{
-      border:1px solid #e6f3f7;           /* 薄い枠線 */
-      background:#f7fbfd;                 /* ごく淡い水色 */
-      color:#7aa2b0;                      /* 文字も淡く */
+      border:1px solid #e6f3f7;
+      background:#f7fbfd;
+      color:#7aa2b0;
       padding:6px 10px; border-radius:999px;
       font-size:12px; font-weight:900; cursor:pointer; user-select:none;
       transition:background-color .15s, color .15s, border-color .15s;
     }
-    .chip:hover{background:#f1f8fb;}
+    .chip:hover{background:#eef7fa;}
     .chip.active{
-      background:#cfe7ef;                 /* 選択は少し濃く */
+      background:#cfe7ef;
       border-color:#9ecbd9;
-      color:#0f4f63;                      /* 文字は濃く */
+      color:#0f4f63;
     }
 
     .result{margin-top:12px;}
     .amount{font-size:clamp(22px,7vw,34px); font-weight:900; color:#2a6b7b; margin:4px 0 6px; font-feature-settings:"tnum"; font-variant-numeric:tabular-nums;}
     .statement{font-weight:900; color:var(--ink); margin:6px 0 2px; line-height:1.6;}
     .blue{color:#1a6ea0;} .up1{font-size:1.1em;}
-    .note-line{color:inherit;} /* 1行目と同色 */
+    .note-line{color:inherit;}
 
     .kpi{display:flex; align-items:center; flex-wrap:wrap; gap:10px;}
     .chip-like{background:#e9f6f8; border:1px dashed #8fb3c0; border-radius:12px; padding:8px 10px; font-weight:900;}
     .formula-chip{margin-left:auto; font-size:12px; color:#6a7a7d; border:0; background:transparent; padding:0;}
 
-    /* ▼ 操作3ボタンを淡い色味へ（添付の参考色に寄せる） */
-    .action-row{display:flex; gap:10px; margin:16px 0 0; flex-wrap:nowrap;}
+    /* ▼ 操作3ボタン（カード内に配置） */
+    .card-actions{padding-top:10px;}
+    .action-row{display:flex; gap:10px; margin:6px 0; flex-wrap:nowrap;}
     .action-row .btn{
-      background:#eef7f9;                 /* 淡い水色 */
-      color:#3f7c8e;                       /* 文字は落ち着いた青 */
-      border:1px solid #cfe3ea;            /* 薄い枠線 */
+      background:#eef7f9;
+      color:#3f7c8e;
+      border:1px solid #cfe3ea;
       box-shadow:none;
       padding:12px 14px; font-size:15px; border-radius:12px; flex:1 1 33%; white-space:nowrap;
     }
@@ -213,16 +214,19 @@
       </div>
     </section>
 
-    <section class="action-row" aria-label="操作">
-      <button id="copy" class="btn" type="button">コピー</button>
-      <button id="reset" class="btn" type="button">リセット</button>
-      <button id="print" class="btn" type="button">印刷 / PDF保存</button>
+    <!-- （タイトル無し）操作ボタンカード -->
+    <section class="card card-actions" aria-label="操作">
+      <div class="action-row">
+        <button id="copy" class="btn" type="button">コピー</button>
+        <button id="reset" class="btn" type="button">リセット</button>
+        <button id="print" class="btn" type="button">印刷 / PDF保存</button>
+      </div>
     </section>
 
     <footer>
       Copyright (c) <span id="yyyy"></span>
       <a href="https://www.matsumoto-kaikei.or.jp/" target="_blank" rel="noopener">税理士法人松本会計事務所</a>
-      All Rights Reserved. / r13
+      All Rights Reserved. / r14
     </footer>
   </div>
 
