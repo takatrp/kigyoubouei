@@ -27,6 +27,7 @@
     header{padding:8px 6px 2px;}
     .brand{display:flex; align-items:center; gap:10px;}
     .logo{height:48px; width:auto; object-fit:contain;}
+    .logo-link{display:inline-flex; align-items:center; line-height:0;}
     .title{flex:1; min-width:0; font-weight:800; letter-spacing:.02em; line-height:1.2; margin:0;
       white-space:nowrap; font-size:clamp(16px, 4.6vw, 24px);}
     .subtitle{color:var(--muted); font-size:12px; margin:6px 0 0 0;}
@@ -95,7 +96,7 @@
     .chip-like{background:#e9f6f8; border:1px dashed #8fb3c0; border-radius:12px; padding:8px 10px; font-weight:900;}
     .formula-chip{margin-left:auto; font-size:12px; color:#6a7a7d; border:0; background:transparent; padding:0;}
 
-    /* ▼ 操作3ボタン（カード内に配置） */
+    /* ▼ 操作3ボタン（カード内に配置・白背景） */
     .card-actions{padding-top:10px;}
     .action-row{display:flex; gap:10px; margin:6px 0; flex-wrap:nowrap;}
     .action-row .btn{
@@ -119,7 +120,9 @@
   <div class="wrap">
     <header>
       <div class="brand">
-        <img src="ロゴ.jpg" alt="松本会計事務所ロゴ" class="logo" />
+        <a class="logo-link" href="https://www.matsumoto-kaikei.or.jp/" target="_blank" rel="noopener noreferrer" title="税理士法人松本会計事務所サイトへ">
+          <img src="ロゴ.jpg" alt="松本会計事務所ロゴ" class="logo" />
+        </a>
         <h1 class="title">標準保障額・保険料売上換算ツール</h1>
       </div>
       <div class="subtitle">標準保障額／必要保険料と限界利益率から、売上相当額・売上比率・必要販売数を算出します。</div>
@@ -226,7 +229,7 @@
     <footer>
       Copyright (c) <span id="yyyy"></span>
       <a href="https://www.matsumoto-kaikei.or.jp/" target="_blank" rel="noopener">税理士法人松本会計事務所</a>
-      All Rights Reserved. / r14
+      All Rights Reserved. / r15
     </footer>
   </div>
 
@@ -245,7 +248,7 @@
     const $ = s => document.querySelector(s);
     const fmtJPY = n => n.toLocaleString('ja-JP',{style:'currency',currency:'JPY',maximumFractionDigits:0});
     const fmtPlain = n => n.toLocaleString('ja-JP',{maximumFractionDigits:0});
-    const fmt1 = n => n.toLocaleString('ja-JP',{minimumFractionDigits:1, maximumFractionDigits:1});
+    const fmt1 = n => n.toLocaleString('ja-JP',{minimumFractionDigits:1, maximumFractionDigits:1}); // 必要販売数のカンマ＋1桁
     const parsePct = t => { if(t==null) return NaN; const s=String(t).replace('%','').replace(',', '.').trim(); return Number(s); };
     $('#yyyy').textContent = String(new Date().getFullYear());
 
