@@ -111,6 +111,31 @@
     footer{margin:18px 4px 6px; text-align:center; color:#667; font-size:11px;}
     footer a{color:inherit; text-decoration:underline; text-underline-offset:2px;}
 
+    /* ===== モーダルのレスポンシブ調整（スマホで幅に収める） ===== */
+    dialog{
+      border:0; padding:0; border-radius:14px;
+      width:fit-content; max-width:min(94vw, 760px); /* 画面幅の94%以内 */
+    }
+    dialog::backdrop{ background:rgba(0,0,0,.25); }
+    .dlg-body{ display:flex; flex-direction:column; }
+    .dlg-head{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:8px; padding:10px 12px; border-bottom:1px solid #eef2f3;
+    }
+    .dlg-close{ background:#f3f7f9; border:1px solid #d9eaed; border-radius:8px; padding:2px 8px; font-size:16px; cursor:pointer; }
+    .dlg-img{
+      display:block;
+      width:100%;               /* 横幅いっぱいに縮小 */
+      height:auto;              /* 縦横比維持 */
+      max-width:100%;
+      max-height:80vh;          /* 画面高の80%以内に収める */
+      object-fit:contain;
+    }
+    @media (max-width:480px){
+      .dlg-head{ padding:8px 10px; }
+      dialog{ max-width:94vw; }
+    }
+
     /* 印刷：画面表示そのまま */
     @page { size: auto; margin: 12mm; }
     @media print{ body{background:#fff;} .card{box-shadow:none;} }
@@ -229,7 +254,7 @@
     <footer>
       Copyright (c) <span id="yyyy"></span>
       <a href="https://www.matsumoto-kaikei.or.jp/" target="_blank" rel="noopener">税理士法人松本会計事務所</a>
-      All Rights Reserved. / r15
+      All Rights Reserved. / r16
     </footer>
   </div>
 
@@ -248,7 +273,7 @@
     const $ = s => document.querySelector(s);
     const fmtJPY = n => n.toLocaleString('ja-JP',{style:'currency',currency:'JPY',maximumFractionDigits:0});
     const fmtPlain = n => n.toLocaleString('ja-JP',{maximumFractionDigits:0});
-    const fmt1 = n => n.toLocaleString('ja-JP',{minimumFractionDigits:1, maximumFractionDigits:1}); // 必要販売数のカンマ＋1桁
+    const fmt1 = n => n.toLocaleString('ja-JP',{minimumFractionDigits:1, maximumFractionDigits:1});
     const parsePct = t => { if(t==null) return NaN; const s=String(t).replace('%','').replace(',', '.').trim(); return Number(s); };
     $('#yyyy').textContent = String(new Date().getFullYear());
 
