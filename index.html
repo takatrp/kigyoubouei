@@ -54,7 +54,7 @@
     .row-two{display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:end;}
     @media (max-width:680px){ .row-two{grid-template-columns:1fr;} }
 
-    /* 「標準保障額とは」ボタン：スマホで折返さない＆少し小さく */
+    /* 「標準保障額とは」ボタン */
     .helper-btn{
       border:1px solid var(--border); background:#eef7f8; color:#2a6b7b;
       padding:6px 10px; border-radius:10px; font-size:13px; font-weight:800;
@@ -69,7 +69,7 @@
       border:0; border-radius:12px; padding:10px 12px; font-size:15px;}
     .btn:active{transform:translateY(1px);}
 
-    /* ▼ チップ（非選択を淡く） */
+    /* チップ（非選択を淡く） */
     .chip-row{display:flex; gap:8px; flex-wrap:wrap;}
     .chip{
       border:1px solid #e6f3f7;
@@ -96,7 +96,7 @@
     .chip-like{background:#e9f6f8; border:1px dashed #8fb3c0; border-radius:12px; padding:8px 10px; font-weight:900;}
     .formula-chip{margin-left:auto; font-size:12px; color:#6a7a7d; border:0; background:transparent; padding:0;}
 
-    /* ▼ 操作3ボタン（カード内に配置・白背景） */
+    /* 操作ボタンカード（白背景） */
     .card-actions{padding-top:10px;}
     .action-row{display:flex; gap:10px; margin:6px 0; flex-wrap:nowrap;}
     .action-row .btn{
@@ -108,13 +108,10 @@
     }
     .action-row .btn:hover{background:#e6f2f6;}
 
-    footer{margin:18px 4px 6px; text-align:center; color:#667; font-size:11px;}
-    footer a{color:inherit; text-decoration:underline; text-underline-offset:2px;}
-
-    /* ===== モーダルのレスポンシブ調整（スマホで幅に収める） ===== */
+    /* ===== モーダル（スマホで幅に収める） ===== */
     dialog{
       border:0; padding:0; border-radius:14px;
-      width:fit-content; max-width:min(94vw, 760px); /* 画面幅の94%以内 */
+      width:fit-content; max-width:min(94vw, 760px);
     }
     dialog::backdrop{ background:rgba(0,0,0,.25); }
     .dlg-body{ display:flex; flex-direction:column; }
@@ -124,16 +121,28 @@
     }
     .dlg-close{ background:#f3f7f9; border:1px solid #d9eaed; border-radius:8px; padding:2px 8px; font-size:16px; cursor:pointer; }
     .dlg-img{
-      display:block;
-      width:100%;               /* 横幅いっぱいに縮小 */
-      height:auto;              /* 縦横比維持 */
-      max-width:100%;
-      max-height:80vh;          /* 画面高の80%以内に収める */
-      object-fit:contain;
+      display:block; width:100%; height:auto; max-width:100%; max-height:80vh; object-fit:contain;
     }
     @media (max-width:480px){
       .dlg-head{ padding:8px 10px; }
       dialog{ max-width:94vw; }
+    }
+
+    /* ===== フッター：ツールポータル仕様（ミニ版・1行） ===== */
+    footer.mk-mini{
+      margin:18px 4px 10px;
+      text-align:center;
+      color:#667;
+      font-size:11px;
+      line-height:1.6;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    footer.mk-mini a{
+      color:inherit;
+      text-decoration:underline;
+      text-underline-offset:2px;
     }
 
     /* 印刷：画面表示そのまま */
@@ -251,10 +260,12 @@
       </div>
     </section>
 
-    <footer>
-      Copyright (c) <span id="yyyy"></span>
-      <a href="https://www.matsumoto-kaikei.or.jp/" target="_blank" rel="noopener">税理士法人松本会計事務所</a>
-      All Rights Reserved. / r16
+    <!-- フッター：ツールポータル仕様（1行ミニ版） -->
+    <footer class="mk-mini">
+      © <span id="cpy-year">2025</span> <a href="https://www.matsumoto-kaikei.or.jp/" target="_blank" rel="noopener license">税理士法人松本会計事務所</a> ｜ 
+      <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="license noopener">CC BY-NC-SA 4.0</a> ｜ 
+      <a href="/tool-portal/terms.html" target="_blank" rel="noopener">利用条件</a> ｜ 
+      <span id="build-rev">r17</span>（<span id="last-updated-date"></span>）
     </footer>
   </div>
 
@@ -275,7 +286,19 @@
     const fmtPlain = n => n.toLocaleString('ja-JP',{maximumFractionDigits:0});
     const fmt1 = n => n.toLocaleString('ja-JP',{minimumFractionDigits:1, maximumFractionDigits:1});
     const parsePct = t => { if(t==null) return NaN; const s=String(t).replace('%','').replace(',', '.').trim(); return Number(s); };
-    $('#yyyy').textContent = String(new Date().getFullYear());
+
+    // 年号 & 最終更新日（YYYY-MM-DD）
+    const yEl = $('#cpy-year'), dEl = $('#last-updated-date');
+    const now = new Date();
+    if (yEl) yEl.textContent = String(now.getFullYear());
+    if (dEl) {
+      const lm = new Date(document.lastModified);
+      const pad = n => String(n).padStart(2,'0');
+      const yyyy = lm.getFullYear();
+      const mm = pad(lm.getMonth()+1);
+      const dd = pad(lm.getDate());
+      dEl.textContent = `${yyyy}-${mm}-${dd}`;
+    }
 
     // 要素
     const covEl=$('#cov'), cmrR=$('#cmr'), cmrI=$('#cmrInput');
@@ -447,7 +470,8 @@
 
     // リセット
     $('#reset').addEventListener('click', ()=>{
-      [covEl, salesEl, avgEl, premEl].forEach(el=> el.value='');
+      [covEl, salesEl, avgEl, premEl].forEach(el=> el.value='';
+      );
       activateChip(salesYearly, salesMonthly);
       activateChip(premMonthly, premYearly);
       updatePlaceholders();
