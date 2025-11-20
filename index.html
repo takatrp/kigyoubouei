@@ -22,7 +22,7 @@
     body{margin:0; font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic UI","YuGothic","Noto Sans JP","Segoe UI",Roboto,Arial,sans-serif;
       background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased;}
     .wrap{padding:max(12px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right))
-           calc(16px + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left)); max-width:820px; margin:0 auto;}
+            calc(16px + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left)); max-width:820px; margin:0 auto;}
 
     header{padding:8px 6px 2px;}
     .brand{display:flex; align-items:center; gap:10px;}
@@ -133,7 +133,7 @@
   <div class="wrap">
     <header>
       <div class="brand">
-        <a class="logo-link" href="https://www.matsumoto-kaikei.or.jp/" target="_blank" rel="noopener noreferrer" title="税理士法人松本会計事務所サイトへ">
+        <a class="logo-link" href="https://takatrp.github.io/tool-portal/" title="ツールポータルへ">
           <img src="ロゴ.jpg" alt="松本会計事務所ロゴ" class="logo" />
         </a>
         <h1 class="title">標準保障額・保険料売上換算ツール</h1>
@@ -191,7 +191,7 @@
       <button id="calcCov" class="btn" type="button" style="margin-top:12px;">売上に換算</button>
 
       <div class="result" id="resCov" hidden>
-        <div class="amount" id="salesCov"></div>
+        <div class="amount" id="salesCov" data-value="0"></div>
         <div class="statement" id="stmtCov"></div>
         <div class="kpi">
           <span class="chip-like" id="pctAnnualCov" hidden>年間売上の — %</span>
@@ -220,7 +220,7 @@
       <button id="calcPrem" class="btn" type="button" style="margin-top:12px;">売上に換算</button>
 
       <div class="result" id="resPrem" hidden>
-        <div class="amount" id="salesPrem"></div>
+        <div class="amount" id="salesPrem" data-value="0"></div>
         <div class="statement" id="stmtPrem"></div>
         <div class="kpi">
           <span class="chip-like" id="pctSalesPrem" hidden>—</span>
@@ -244,7 +244,7 @@
       © <span id="cpy-year">2025</span> <a href="https://www.matsumoto-kaikei.or.jp/" target="_blank" rel="noopener license">税理士法人松本会計事務所</a> ｜ 
       <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="license noopener">CC BY-NC-SA 4.0</a> ｜ 
       <a href="/tool-portal/terms.html" target="_blank" rel="noopener">利用条件</a> ｜ 
-      <span id="build-rev">r20</span>（<span id="last-updated-date"></span>）
+      <span id="build-rev">r22</span>（<span id="last-updated-date"></span>）
     </footer>
   </div>
 
@@ -336,23 +336,27 @@
       const salesPeriod = salesYearly.classList.contains('active') ? 'year' : 'month';
 
       if(!resCov.hidden && salesCovEl.textContent){
+        // 表示文字列からではなく、datasetから数値を取得するよう修正
+        const covVal = Number(salesCovEl.dataset.value || 0);
+        
         if(salesVal>0){
           const annualSales = (salesPeriod==='year') ? salesVal : salesVal*12;
-          const covVal = Number(String(salesCovEl.textContent).replace(/[^\d]/g,''));
           const pct = annualSales>0 ? (covVal/annualSales)*100 : NaN;
           pctAnnualCov.textContent = `年間売上の ${pct.toFixed(1)}%`;
           pctAnnualCov.hidden = isNaN(pct);
         }else{ pctAnnualCov.hidden = true; }
+        
         if(avg>0){
-          const covVal = Number(String(salesCovEl.textContent).replace(/[^\d]/g,''));
           unitsCovChip.textContent = `必要販売数：${fmt1(covVal/avg)}`;
           unitsCovChip.hidden = false;
         }else{ unitsCovChip.hidden = true; }
       }
 
       if(!resPrem.hidden && salesPremEl.textContent){
+        // 表示文字列からではなく、datasetから数値を取得するよう修正
+        const premVal = Number(salesPremEl.dataset.value || 0);
+
         if(salesVal>0){
-          const premVal = Number(String(salesPremEl.textContent).replace(/[^\d]/g,''));
           if(premMonthly.classList.contains('active')){
             const base = (salesPeriod==='month') ? salesVal : salesVal/12;
             pctSalesPrem.textContent = `月間売上の ${((premVal/base)*100).toFixed(1)}%`;
@@ -362,8 +366,8 @@
           }
           pctSalesPrem.hidden = false;
         }else{ pctSalesPrem.hidden = true; }
+        
         if(avg>0){
-          const premVal = Number(String(salesPremEl.textContent).replace(/[^\d]/g,''));
           unitsPremChip.textContent = `必要販売数：${fmt1(premVal/avg)}`;
           unitsPremChip.hidden = false;
         }else{ unitsPremChip.hidden = true; }
@@ -379,7 +383,11 @@
 
       const salesNeededCov = Math.ceil(cov / rate);
       resCov.hidden=false;
+      
+      // 数値をdata属性に保存
+      salesCovEl.dataset.value = salesNeededCov;
       salesCovEl.textContent = fmtJPY(salesNeededCov);
+      
       stmtCov.innerHTML =
         `標準保障額 ${fmtJPY(cov)} は、御社の売上 ${fmtJPY(salesNeededCov)} に相当します。<br>`+
         `<span class="note-line">標準保障額は、保険事故発生後に短期間で必要と想定される金額です。</span><br>`+
@@ -400,14 +408,25 @@
 
       const salesNeededPrem = Math.ceil(prem / rate);
       resPrem.hidden=false;
+      
+      // 数値をdata属性に保存
+      salesPremEl.dataset.value = salesNeededPrem;
 
-      salesPremEl.textContent = isMonth ? `${fmtJPY(salesNeededPrem)} / 月` : `${fmtJPY(salesNeededPrem)} / 年`;
-      const periodLabel = isMonth ? '月' : '年';
-      stmtPrem.innerHTML =
-        (isMonth
-          ? `必要保険料 ${fmtJPY(prem)} は、御社の月間売上 ${fmtJPY(salesNeededPrem)} に相当します。`
-          : `必要保険料 ${fmtJPY(prem)} は、御社の年間売上 ${fmtJPY(salesNeededPrem)} に相当します。`) +
-        `<br><span class="blue up1">${periodLabel}${fmtJPY(salesNeededPrem)}の売上を追加で上げれば、必要な保険料をカバーすることができ、将来の不安が解消できます。</span>`;
+      if (isMonth) {
+        // 月額選択時
+        salesPremEl.textContent = `${fmtJPY(salesNeededPrem)} / 月`;
+        stmtPrem.innerHTML =
+          `必要保険料 ${fmtJPY(prem)} は、御社の月間売上 ${fmtJPY(salesNeededPrem)} に相当します。<br>` +
+          `<span class="blue up1">月${fmtJPY(salesNeededPrem)}の売上を追加で上げれば、必要な保険料をカバーすることができ、将来の不安が解消できます。</span>`;
+      } else {
+        // 年額選択時
+        const monthlyVal = Math.round(salesNeededPrem / 12);
+        salesPremEl.innerHTML = `${fmtJPY(salesNeededPrem)} / 年 <span style="font-size:0.75em; color:var(--muted); margin-left:4px;">（${fmtJPY(monthlyVal)} / 月）</span>`;
+        
+        stmtPrem.innerHTML =
+          `必要保険料 ${fmtJPY(prem)} は、御社の年間売上 ${fmtJPY(salesNeededPrem)}（月${fmtJPY(monthlyVal)}）に相当します。<br>` +
+          `<span class="blue up1">年${fmtJPY(salesNeededPrem)}（月${fmtJPY(monthlyVal)}）の売上を追加で上げれば、必要な保険料をカバーすることができ、将来の不安が解消できます。</span>`;
+      }
 
       updateOptionalMetrics();
       autoPrem=true;
@@ -458,6 +477,10 @@
       pctAnnualCov.hidden=true; pctSalesPrem.hidden=true;
       unitsCovChip.hidden=true; unitsPremChip.hidden=true;
       autoCov=false; autoPrem=false;
+      // data属性もクリア
+      salesCovEl.dataset.value = "0";
+      salesPremEl.dataset.value = "0";
+      
       window.scrollTo({top:0, behavior:'smooth'});
     });
 
