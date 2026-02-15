@@ -285,7 +285,7 @@
       © <span id="cpy-year">2025</span> <a href="https://www.matsumoto-kaikei.or.jp/" target="_blank" rel="noopener license">税理士法人松本会計事務所</a> ｜ 
       <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="license noopener">CC BY-NC-SA 4.0</a> ｜ 
       <a href="/tool-portal/terms.html" target="_blank" rel="noopener">利用条件</a> ｜ 
-      <span id="build-rev">r24</span>（<span id="last-updated-date"></span>）
+      <span id="build-rev">r25</span>（<span id="last-updated-date"></span>）
     </footer>
   </div>
 
@@ -428,17 +428,20 @@
       const covFmt = fmtJPY(cov);
       const salesFmt = fmtJPY(salesNeededCov);
 
+      // ▼修正1: 文言変更（「不在で」→「不在の中」）
       stmtCov.innerHTML =
         `標準保障額 ${covFmt} は、御社の売上 ${salesFmt} に相当します。<br>`+
         `<span class="note-line">標準保障額は、保険事故発生後に短期間で必要と想定される金額です。</span><br>`+
-        `<span class="blue up1">もし万が一の際、被保険者が不在で、この売上を上げることはできますか？</span>`;
+        `<span class="blue up1">もし万が一の際、被保険者が不在の中、この売上を上げることはできますか？</span>`;
 
       updateOptionalMetrics();
       autoCov=true;
 
       // ★問いかけエリア：文言更新
+      // ▼修正2: 問いかけの下に一文を追加
       transitionTitle.innerHTML = 
-        `経営者の不在時など、万が一の際に<br>この <span class="blue">${covFmt}の資金</span> または <span class="blue">${salesFmt}の売上</span> を、即座に確保することは可能ですか？`;
+        `経営者の不在時など、万が一の際に<br>この <span class="blue">${covFmt}の資金</span> または <span class="blue">${salesFmt}の売上</span> を、即座に確保することは可能ですか？<br>` +
+        `<span style="font-weight:normal; color:var(--ink); font-size:0.95em;">難しければ、企業の存続や遺族の生活に影響を及ぼします。</span>`;
       
       // ガイドメッセージも更新
       msgGuide.innerHTML = 
