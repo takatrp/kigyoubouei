@@ -122,6 +122,14 @@
     }
     .msg-success { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
     .msg-guide   { background: #fff; color: var(--ink); border: 1px dashed var(--accent); }
+    
+    /* 「やはり難しいかも」ボタン */
+    .reconsider-btn {
+      background: transparent; border: 1px solid #a5d6a7; color: #2e7d32;
+      border-radius: 6px; padding: 4px 10px; font-size: 13px; cursor: pointer;
+      font-weight: bold; display: inline-block;
+    }
+    .reconsider-btn:hover { background: #c8e6c9; }
 
     @keyframes fadeIn { from{opacity:0; transform:translateY(5px);} to{opacity:1; transform:translateY(0);} }
 
@@ -220,9 +228,7 @@
 
     <section class="card transition-card" id="transitionArea" hidden>
       <div class="transition-title" id="transitionTitle">
-        経営者の不在時など、万が一の際に<br>
-        この売上（利益）を、即座に確保することは可能ですか？
-      </div>
+        </div>
       <div class="choice-row" id="choiceBtns">
         <button class="choice-btn btn-yes" id="btnCanAchieve" type="button">はい、確保できます</button>
         <button class="choice-btn btn-no" id="btnCannotAchieve" type="button">いいえ、難しいです</button>
@@ -230,12 +236,13 @@
 
       <div class="msg-box msg-success" id="msgSuccess" hidden>
         素晴らしいです。<br>
-        自社の財務体力でリスクをカバーできる状態ですので、無理に保険を検討する必要はないかもしれません。
+        自社の財務体力でリスクをカバーできる状態ですので、無理に保険を検討する必要はないかもしれません。<br>
+        <div style="text-align:right; margin-top:8px;">
+          <button id="btnReconsider" type="button" class="reconsider-btn">やはり難しいかも &gt;</button>
+        </div>
       </div>
       <div class="msg-box msg-guide" id="msgGuide" hidden>
-        緊急時に売上を上げるのが難しい場合、その分を「保険」で補う必要があります。<br>
-        では、<strong>「その保障を持つためのコスト（保険料）」</strong>が、売上換算でいくらに相当するか確認してみましょう。
-      </div>
+        </div>
     </section>
 
     <section class="card" id="premSection" aria-label="必要保険料の換算" hidden>
@@ -278,7 +285,7 @@
       © <span id="cpy-year">2025</span> <a href="https://www.matsumoto-kaikei.or.jp/" target="_blank" rel="noopener license">税理士法人松本会計事務所</a> ｜ 
       <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="license noopener">CC BY-NC-SA 4.0</a> ｜ 
       <a href="/tool-portal/terms.html" target="_blank" rel="noopener">利用条件</a> ｜ 
-      <span id="build-rev">r23</span>（<span id="last-updated-date"></span>）
+      <span id="build-rev">r24</span>（<span id="last-updated-date"></span>）
     </footer>
   </div>
 
@@ -318,9 +325,9 @@
     const pctAnnualCov=$('#pctAnnualCov'), unitsCovChip=$('#unitsCovChip');
 
     // ★新設エリアの要素
-    const transitionArea=$('#transitionArea'), choiceBtns=$('#choiceBtns');
+    const transitionArea=$('#transitionArea'), transitionTitle=$('#transitionTitle'), choiceBtns=$('#choiceBtns');
     const btnCanAchieve=$('#btnCanAchieve'), btnCannotAchieve=$('#btnCannotAchieve');
-    const msgSuccess=$('#msgSuccess'), msgGuide=$('#msgGuide');
+    const msgSuccess=$('#msgSuccess'), msgGuide=$('#msgGuide'), btnReconsider=$('#btnReconsider');
     const premSection=$('#premSection'); // 保険料セクション
 
     const resPrem=$('#resPrem'), salesPremEl=$('#salesPrem'), stmtPrem=$('#stmtPrem');
@@ -406,7 +413,7 @@
       }
     }
 
-    // ★計算：標準保障額（変更点：ここで問いかけエリアを表示）
+    // ★計算：標準保障額
     function calcCoverage(scroll=true){
       const rate = parsePct(cmrI.value)/100;
       const cov  = parseMoney(covEl.value);
@@ -418,21 +425,30 @@
       salesCovEl.dataset.value = salesNeededCov;
       salesCovEl.textContent = fmtJPY(salesNeededCov);
       
+      const covFmt = fmtJPY(cov);
+      const salesFmt = fmtJPY(salesNeededCov);
+
       stmtCov.innerHTML =
-        `標準保障額 ${fmtJPY(cov)} は、御社の売上 ${fmtJPY(salesNeededCov)} に相当します。<br>`+
+        `標準保障額 ${covFmt} は、御社の売上 ${salesFmt} に相当します。<br>`+
         `<span class="note-line">標準保障額は、保険事故発生後に短期間で必要と想定される金額です。</span><br>`+
         `<span class="blue up1">もし万が一の際、被保険者が不在で、この売上を上げることはできますか？</span>`;
 
       updateOptionalMetrics();
       autoCov=true;
 
-      // ★問いかけエリアを表示
+      // ★問いかけエリア：文言更新
+      transitionTitle.innerHTML = 
+        `経営者の不在時など、万が一の際に<br>この <span class="blue">${covFmt}の資金</span> または <span class="blue">${salesFmt}の売上</span> を、即座に確保することは可能ですか？`;
+      
+      // ガイドメッセージも更新
+      msgGuide.innerHTML = 
+        `緊急時に ${covFmt} の資金の確保または ${salesFmt} の売上の確保が難しい場合、その分を「保険」で補う必要があります。<br>では、<strong>「その保障を持つためのコスト（保険料）」</strong>が、売上換算でいくらに相当するか確認してみましょう。`;
+
+      // エリア表示制御
       transitionArea.hidden = false;
-      choiceBtns.hidden = false; // ボタンを再表示（リセット対策）
+      choiceBtns.hidden = false; // ボタンを再表示
       msgSuccess.hidden = true;
       msgGuide.hidden = true;
-      // 保険料エリアは一旦隠す（フローやり直し時など）
-      // premSection.hidden = true; // ← 既に入力済みの場合は隠さない方が親切な場合もあるが、フロー重視なら隠す。今回は「隠さない」方針（再計算時）
       
       if(scroll) transitionArea.scrollIntoView({behavior:'smooth', block:'center'});
     }
@@ -442,16 +458,25 @@
       choiceBtns.hidden = true;
       msgSuccess.hidden = false;
       msgGuide.hidden = true;
-      premSection.hidden = true; // 保険料セクションは隠す
+      premSection.hidden = true; 
     });
 
     btnCannotAchieve.addEventListener('click', ()=>{
+      showPremiumSection();
+    });
+
+    // ★「やはり難しいかも」ボタンの挙動（いいえと同じルートへ）
+    btnReconsider.addEventListener('click', ()=>{
+      showPremiumSection();
+    });
+
+    function showPremiumSection(){
       choiceBtns.hidden = true;
       msgSuccess.hidden = true;
       msgGuide.hidden = false;
-      premSection.hidden = false; // 保険料セクションを表示
+      premSection.hidden = false;
       premSection.scrollIntoView({behavior:'smooth', block:'start'});
-    });
+    }
 
     // 計算：必要保険料
     function calcPremium(scroll=true){
@@ -486,13 +511,13 @@
     $('#calcCov').addEventListener('click', ()=> calcCoverage(true));
     $('#calcPrem').addEventListener('click', ()=> calcPremium(true));
 
-    // コピー（文言も問いかけの結果に合わせて調整が必要だが、今回は数値中心）
+    // コピー
     $('#copy').addEventListener('click', async ()=>{
       const cmrTxt = `${(+parsePct(cmrI.value)).toFixed(1)}%`;
       const lines = [];
       if(!resCov.hidden){
         lines.push(`[標準保障額] ${salesCovEl.textContent}（CMR ${cmrTxt}）`);
-        lines.push(stmtCov.textContent.replace(/<[^>]*>/g,'')); // タグ除去
+        lines.push(stmtCov.textContent.replace(/<[^>]*>/g,''));
       }
       if(!premSection.hidden && !resPrem.hidden){
         lines.push(`------------------`);
@@ -519,8 +544,8 @@
       
       // 表示状態リセット
       resCov.hidden=true;
-      transitionArea.hidden=true; // 問いかけエリアを隠す
-      premSection.hidden=true;    // 保険料エリアを隠す
+      transitionArea.hidden=true;
+      premSection.hidden=true;
       resPrem.hidden=true;
       
       pctAnnualCov.hidden=true; pctSalesPrem.hidden=true;
