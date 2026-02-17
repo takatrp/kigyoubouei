@@ -1,4 +1,9 @@
 <!DOCTYPE html>
+<!-- internal version: r26
+  - 必要保険料換算後に「回収するための『打ち手』を検討する →」CTAボタンを追加
+  - 押下で 年商（売上 月額×12）/取引単価（平均単価）/支出額（必要保険料） を query + localStorage で渡して「打ち手検討ツール」を起動
+  - 打ち手検討ツールURLを https://takatrp.github.io/sale-kit/ に設定
+-->
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
@@ -142,6 +147,28 @@
       overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
     }
 
+    /* ====== 追加：打ち手検討CTA（スクショ風） ====== */
+    .cta-wrap{ margin-top: 14px; }
+    .cta-orange{
+      width:100%;
+      border:0;
+      cursor:pointer;
+      padding:16px 14px;
+      border-radius:18px;
+      font-weight:900;
+      font-size:18px;
+      letter-spacing:.02em;
+      color:#fff;
+      background: linear-gradient(90deg, #f3a23a 0%, #f2a21f 45%, #f09b12 100%);
+      box-shadow: 0 10px 22px rgba(0,0,0,.10);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+    }
+    .cta-orange:active{ transform: translateY(1px); }
+    .cta-orange .arrow{ font-size: 20px; line-height: 1; }
+
     /* 印刷時の設定 */
     @page { size: auto; margin: 12mm; }
     @media print{
@@ -149,6 +176,7 @@
       .card{box-shadow:none;}
       .transition-card{ display:none !important; }
       .card-actions{ display:none !important; }
+      .cta-wrap{ display:none !important; } /* CTAは印刷不要 */
 
       /* 結果が無いセクションは印刷しない（E） */
       #covSection:not(.has-result){ display:none !important; }
@@ -271,6 +299,13 @@
           <span class="chip-like" id="unitsPremChip" hidden>必要販売数：—</span>
           <span class="formula-chip">計算式：必要保険料 ÷ (限界利益率 / 100)</span>
         </div>
+
+        <!-- ★追加：打ち手検討CTA（スクショ同等） -->
+        <div class="cta-wrap" id="tacticsArea" hidden>
+          <button id="openTactics" class="cta-orange" type="button">
+            回収するための「打ち手」を検討する <span class="arrow">→</span>
+          </button>
+        </div>
       </div>
     </section>
 
@@ -286,7 +321,7 @@
       © <span id="cpy-year">2025</span> <a href="https://www.matsumoto-kaikei.or.jp/" target="_blank" rel="noopener license">税理士法人松本会計事務所</a> ｜ 
       <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="license noopener">CC BY-NC-SA 4.0</a> ｜ 
       <a href="/tool-portal/terms.html" target="_blank" rel="noopener">利用条件</a> ｜ 
-      <span id="build-rev">r25</span>（<span id="last-updated-date"></span>）
+      <span id="build-rev">r26</span>（<span id="last-updated-date"></span>）
     </footer>
   </div>
 
@@ -307,9 +342,11 @@
   <script>
     const $ = s => document.querySelector(s);
     const fmtJPY = n => n.toLocaleString('ja-JP',{style:'currency',currency:'JPY',maximumFractionDigits:0});
-    const fmtPlain = n => n.toLocaleString('ja-JP',{maximumFractionDigits:0});
     const fmt1 = n => n.toLocaleString('ja-JP',{minimumFractionDigits:1, maximumFractionDigits:1});
     const parsePct = t => { if(t==null) return NaN; const s=String(t).replace('%','').replace(',', '.').trim(); return Number(s); };
+
+    /* ★確定：打ち手検討ツールURL */
+    const TACTICS_URL = 'https://takatrp.github.io/sale-kit/';
 
     // 年号 & 最終更新日
     const yEl = $('#cpy-year'), dEl = $('#last-updated-date');
@@ -339,21 +376,21 @@
     const resPrem=$('#resPrem'), salesPremEl=$('#salesPrem'), stmtPrem=$('#stmtPrem');
     const pctSalesPrem=$('#pctSalesPrem'), unitsPremChip=$('#unitsPremChip');
 
-    // ユーティリティ：印刷対象判定用（E）
+    // ★打ち手検討CTA
+    const tacticsArea = $('#tacticsArea');
+    const openTacticsBtn = $('#openTactics');
+
     function setHasResult(sectionEl, has){
       if(!sectionEl) return;
       sectionEl.classList.toggle('has-result', !!has);
     }
 
-    // 既定CMR 43.6%
     function setCmr(v){ cmrR.value=Number(v).toFixed(1); cmrI.value=Number(v).toFixed(1); }
     setCmr(43.6);
 
-    // (A) 自動再計算中はアラートを出さないため、calc*に manual フラグを渡す
     cmrR.addEventListener('input', ()=>{ cmrI.value=(+cmrR.value).toFixed(1); if(autoAny()) autoRecalc(); });
     cmrI.addEventListener('input', ()=>{ const v=parsePct(cmrI.value); if(!isNaN(v)) cmrR.value=v.toFixed(1); if(autoAny()) autoRecalc(); });
 
-    // 金額フォーマッタ
     function normalizeDigits(str){
       if(!str) return '';
       str=str.replace(/[０-９]/g,s=>String.fromCharCode(s.charCodeAt(0)-0xFEE0));
@@ -377,15 +414,13 @@
       });
     }
 
-    // (A) auto時は manual=false で呼び出す（アラート無し）
+    const parseMoney = s => { if(!s) return NaN; const d=String(s).replace(/[^\d]/g,''); return d?Number(d):NaN; };
+
     attachMoneyFormatter(covEl,  ()=>{ if(autoCov)  calcCoverage(false,false); });
-    attachMoneyFormatter(premEl, ()=>{ if(autoPrem) calcPremium(false,false); });
+    attachMoneyFormatter(premEl, ()=>{ if(autoPrem) calcPremium(false,false); else hideTacticsCTA(); });
     attachMoneyFormatter(salesEl,()=>{ if(!resCov.hidden||!resPrem.hidden) updateOptionalMetrics(); });
     attachMoneyFormatter(avgEl,  ()=>{ if(!resCov.hidden||!resPrem.hidden) updateOptionalMetrics(); });
 
-    const parseMoney = s => { if(!s) return NaN; const d=String(s).replace(/[^\d]/g,''); return d?Number(d):NaN; };
-
-    // チップ切替
     function activateChip(on,off){
       on.classList.add('active'); on.setAttribute('aria-selected','true');
       off.classList.remove('active'); off.setAttribute('aria-selected','false');
@@ -404,15 +439,16 @@
     });
     premMonthly .addEventListener('click', ()=>{
       activateChip(premMonthly ,premYearly ); updatePlaceholders();
+      hideTacticsCTA();
       if(autoPrem) calcPremium(false,false); else updateOptionalMetrics();
     });
     premYearly  .addEventListener('click', ()=>{
       activateChip(premYearly  ,premMonthly); updatePlaceholders();
+      hideTacticsCTA();
       if(autoPrem) calcPremium(false,false); else updateOptionalMetrics();
     });
     updatePlaceholders();
 
-    // 自動再計算
     let autoCov=false, autoPrem=false;
     const autoAny = ()=> autoCov || autoPrem;
     function autoRecalc(){
@@ -420,7 +456,6 @@
       if(autoPrem) calcPremium(false,false);
     }
 
-    // 任意KPI
     function updateOptionalMetrics(){
       const avg = parseMoney(avgEl.value);
       const salesVal = parseMoney(salesEl.value);
@@ -461,7 +496,9 @@
       }
     }
 
-    // (A) 自動再計算時はアラートを出さず、入力が不完全なら結果を隠す
+    function hideTacticsCTA(){ if(tacticsArea) tacticsArea.hidden = true; }
+    function showTacticsCTA(){ if(tacticsArea) tacticsArea.hidden = false; }
+
     function calcCoverage(scroll=true, manual=true){
       const rate = parsePct(cmrI.value)/100;
       const cov  = parseMoney(covEl.value);
@@ -471,18 +508,17 @@
           if(!(rate>0)){ alert('限界利益率を正しく入力してください。'); cmrI.focus(); }
           else { alert('標準保障額を入力してください。'); covEl.focus(); }
         }
-        // auto時は黙って非表示（ストレス回避）
         resCov.hidden = true;
         transitionArea.hidden = true;
         premSection.hidden = true;
         resPrem.hidden = true;
+        hideTacticsCTA();
 
         setHasResult(covSection,false);
         setHasResult(premSection,false);
 
         pctAnnualCov.hidden=true; unitsCovChip.hidden=true;
         pctSalesPrem.hidden=true; unitsPremChip.hidden=true;
-        autoCov = manual ? autoCov : autoCov; // 状態は維持（必要なら手動で再計算できる）
         return;
       }
 
@@ -515,19 +551,18 @@
       msgSuccess.hidden = true;
       msgGuide.hidden = true;
 
-      // (E) 印刷対象：結果が出たら has-result を付与
       setHasResult(covSection,true);
 
       if(scroll) transitionArea.scrollIntoView({behavior:'smooth', block:'center'});
     }
 
-    // 問いかけボタン
     btnCanAchieve.addEventListener('click', ()=>{
       choiceBtns.hidden = true;
       msgSuccess.hidden = false;
       msgGuide.hidden = true;
       premSection.hidden = true;
-      // prem結果は印刷対象から外す
+      resPrem.hidden = true;
+      hideTacticsCTA();
       setHasResult(premSection,false);
     });
 
@@ -552,8 +587,8 @@
           if(!(rate>0)){ alert('限界利益率を正しく入力してください。'); cmrI.focus(); }
           else { alert('必要保険料を入力してください。'); premEl.focus(); }
         }
-        // auto時は黙って非表示（A）
         resPrem.hidden = true;
+        hideTacticsCTA();
         setHasResult(premSection,false);
         pctSalesPrem.hidden=true; unitsPremChip.hidden=true;
         return;
@@ -579,15 +614,85 @@
       updateOptionalMetrics();
       autoPrem=true;
 
-      // (E) 印刷対象：結果が出たら has-result を付与
       setHasResult(premSection,true);
+
+      showTacticsCTA();
 
       if(scroll) resPrem.scrollIntoView({behavior:'smooth', block:'center'});
     }
 
-    // 手動計算（manual=trueでalertあり）
     $('#calcCov').addEventListener('click', ()=> calcCoverage(true,true));
     $('#calcPrem').addEventListener('click', ()=> calcPremium(true,true));
+
+    // ★打ち手検討 起動（値を渡す）
+    function buildTacticsPayloadOrAlert(){
+      // 1) 必要保険料結果が未計算なら、ここで計算を試みる（1クリックで済ませる）
+      if(resPrem.hidden){
+        calcPremium(true,true);
+        if(resPrem.hidden) return null;
+      }
+
+      const salesVal = parseMoney(salesEl.value);
+      const avgVal   = parseMoney(avgEl.value);
+      const premVal  = parseMoney(premEl.value);
+      const cmrVal   = parsePct(cmrI.value);
+
+      if(!(salesVal>0)){
+        alert('売上を入力してください（年額／月額の切替も確認してください）。');
+        salesEl.focus();
+        return null;
+      }
+      if(!(avgVal>0)){
+        alert('平均単価（取引単価）を入力してください。');
+        avgEl.focus();
+        return null;
+      }
+      if(!(premVal>0)){
+        alert('必要保険料を入力してください。');
+        premEl.focus();
+        return null;
+      }
+
+      // 売上→年商（※月額なら×12）
+      const annualSales = salesYearly.classList.contains('active') ? salesVal : salesVal * 12;
+      // 必要保険料→支出額（期間はそのまま）
+      const expensePeriod = premMonthly.classList.contains('active') ? 'month' : 'year';
+
+      return {
+        v: 1,
+        annual_sales: Math.round(annualSales),
+        unit_price: Math.round(avgVal),
+        expense: Math.round(premVal),
+        expense_period: expensePeriod,
+        cmr_pct: (cmrVal>0 ? Number(cmrVal.toFixed(1)) : null),
+        created_at: new Date().toISOString(),
+        src: 'premium-converter'
+      };
+    }
+
+    function openTacticsTool(){
+      const payload = buildTacticsPayloadOrAlert();
+      if(!payload) return;
+
+      // localStorageでも渡す（受け側がクエリ非対応でも拾える）
+      try{
+        localStorage.setItem('mk_uchite_payload_v1', JSON.stringify(payload));
+      }catch(e){ /* ignore */ }
+
+      // querystringでも渡す
+      const qs = new URLSearchParams();
+      qs.set('annual_sales', String(payload.annual_sales));   // 年商
+      qs.set('unit_price',   String(payload.unit_price));     // 取引単価（平均単価）
+      qs.set('expense',      String(payload.expense));        // 支出額（必要保険料）
+      qs.set('expense_period', payload.expense_period);       // month / year
+      if(payload.cmr_pct!=null) qs.set('cmr_pct', String(payload.cmr_pct));
+      qs.set('src', payload.src);
+
+      const url = TACTICS_URL + (TACTICS_URL.includes('?') ? '&' : '?') + qs.toString() + '#autofill=1';
+      window.open(url, '_blank', 'noopener');
+    }
+
+    openTacticsBtn?.addEventListener('click', openTacticsTool);
 
     // コピー
     $('#copy').addEventListener('click', async ()=>{
@@ -624,6 +729,7 @@
       transitionArea.hidden=true;
       premSection.hidden=true;
       resPrem.hidden=true;
+      hideTacticsCTA();
 
       pctAnnualCov.hidden=true; pctSalesPrem.hidden=true;
       unitsCovChip.hidden=true; unitsPremChip.hidden=true;
@@ -632,7 +738,6 @@
       salesCovEl.dataset.value = "0";
       salesPremEl.dataset.value = "0";
 
-      // (E) 印刷対象フラグも消す
       setHasResult(covSection,false);
       setHasResult(premSection,false);
 
@@ -641,7 +746,7 @@
 
     $('#print').addEventListener('click', ()=> window.print() );
 
-    // (C) モーダル：フォーカス管理（開く前の要素へ戻す）
+    // (C) モーダル：フォーカス管理
     const dlg=$('#covInfoDlg');
     const openBtn=$('#openCovInfo');
     const closeBtn=$('#closeCovInfo');
@@ -650,7 +755,6 @@
     openBtn.addEventListener('click', ()=>{
       lastFocusEl = document.activeElement;
       dlg.showModal();
-      // モーダル内の明確なフォーカス先
       setTimeout(()=>{ closeBtn?.focus(); }, 0);
     });
 
@@ -665,7 +769,6 @@
       lastFocusEl = null;
     });
 
-    // backdropクリックで閉じる
     dlg.addEventListener('click', e=>{ if(e.target===dlg) dlg.close(); });
   </script>
 </body>
