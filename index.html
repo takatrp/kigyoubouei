@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<!-- internal version: r27
-  - 方式A 実装（必要保険料＝支出のタイプを「月額 / 年額 / 単発」に拡張）
-  - 単発の場合は「回収期間（ヶ月）」を指定し、月あたり必要売上（＋総必要売上）を表示
-  - 打ち手検討ツールへは「月額換算の支出（方式A）」として渡す（年額→÷12、単発→÷回収期間）
+<!-- internal version: r28
+  - ① 標準保障額プレースホルダーを「例：100,000,000」へ変更
+  - ② 必要保険料の支出タイプから「単発」を削除（回収期間UI/ロジックも削除）
+  - ③ 打ち手CTA文言を変更＋ボタン色をツールのトーン（アクセント）へ統一
 -->
 <html lang="ja">
 <head>
@@ -148,27 +148,27 @@
       overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
     }
 
-    /* ====== 追加：打ち手検討CTA（スクショ風） ====== */
+    /* ====== 打ち手検討CTA（アクセント統一） ====== */
     .cta-wrap{ margin-top: 14px; }
-    .cta-orange{
+    .cta-accent{
       width:100%;
       border:0;
       cursor:pointer;
-      padding:16px 14px;
+      padding:14px 14px;
       border-radius:18px;
       font-weight:900;
-      font-size:18px;
+      font-size:17px;
       letter-spacing:.02em;
       color:#fff;
-      background: linear-gradient(90deg, #f3a23a 0%, #f2a21f 45%, #f09b12 100%);
-      box-shadow: 0 10px 22px rgba(0,0,0,.10);
+      background: linear-gradient(180deg,var(--accent-2),var(--accent));
+      box-shadow: 0 10px 22px rgba(35,80,90,.16);
       display:flex;
       align-items:center;
       justify-content:center;
       gap:10px;
     }
-    .cta-orange:active{ transform: translateY(1px); }
-    .cta-orange .arrow{ font-size: 20px; line-height: 1; }
+    .cta-accent:active{ transform: translateY(1px); }
+    .cta-accent .arrow{ font-size: 20px; line-height: 1; }
 
     /* 印刷時の設定 */
     @page { size: auto; margin: 12mm; }
@@ -208,7 +208,8 @@
           <div class="inline-actions">
             <div class="yen-input compact">
               <span class="prefix">¥</span>
-              <input id="cov" class="money" type="text" inputmode="numeric" placeholder="例：5,000,000" autocomplete="off" />
+              <!-- ① placeholder変更 -->
+              <input id="cov" class="money" type="text" inputmode="numeric" placeholder="例：100,000,000" autocomplete="off" />
             </div>
             <button class="helper-btn" id="openCovInfo" type="button">標準保障額とは</button>
           </div>
@@ -285,28 +286,10 @@
           <input id="prem" class="money" type="text" inputmode="numeric" placeholder="例：12,000" autocomplete="off" />
         </div>
 
-        <!-- 方式A：支出のタイプ（単発も追加） -->
+        <!-- ② 「単発」を削除（支出タイプは月額 / 年額のみ） -->
         <div class="chip-row" role="tablist" aria-label="支出のタイプ">
           <button class="chip active" id="premMonthly" type="button">月額</button>
           <button class="chip" id="premYearly" type="button">年額</button>
-          <button class="chip" id="premOnce" type="button">単発</button>
-        </div>
-      </div>
-
-      <!-- 単発時のみ：回収期間 -->
-      <div id="recoverWrap" style="margin-top:10px;" hidden>
-        <div class="label">回収期間（ヶ月）</div>
-        <div class="inline-actions wrap">
-          <div class="chip-row" role="tablist" aria-label="回収期間チップ">
-            <button class="chip" data-m="3"  id="rec3"  type="button">3</button>
-            <button class="chip" data-m="6"  id="rec6"  type="button">6</button>
-            <button class="chip active" data-m="12" id="rec12" type="button">12</button>
-            <button class="chip" data-m="24" id="rec24" type="button">24</button>
-          </div>
-          <div class="pctbox" style="padding:4px 8px;">
-            <input id="recoverMonths" class="pct" type="text" inputmode="numeric" value="12" aria-label="回収期間（ヶ月）" />
-            <span class="unit">ヶ月</span>
-          </div>
         </div>
       </div>
 
@@ -314,7 +297,7 @@
 
       <div class="result" id="resPrem" hidden>
         <div class="amount" id="salesPrem"
-             data-total="0" data-monthly="0" data-annual="0" data-mode="month" data-recover="0"></div>
+             data-total="0" data-monthly="0" data-annual="0" data-mode="month"></div>
         <div class="statement" id="stmtPrem"></div>
         <div class="kpi">
           <span class="chip-like" id="pctSalesPrem" hidden>—</span>
@@ -322,10 +305,10 @@
           <span class="formula-chip" id="formulaPrem">計算式：必要保険料 ÷ (限界利益率 / 100)</span>
         </div>
 
-        <!-- ★追加：打ち手検討CTA（スクショ同等） -->
+        <!-- ③ 文言変更＋トーン統一 -->
         <div class="cta-wrap" id="tacticsArea" hidden>
-          <button id="openTactics" class="cta-orange" type="button">
-            回収するための「打ち手」を検討する <span class="arrow">→</span>
+          <button id="openTactics" class="cta-accent" type="button">
+            売上を追加で上げるための「打ち手」を検討する <span class="arrow">→</span>
           </button>
         </div>
       </div>
@@ -343,7 +326,7 @@
       © <span id="cpy-year">2025</span> <a href="https://www.matsumoto-kaikei.or.jp/" target="_blank" rel="noopener license">税理士法人松本会計事務所</a> ｜ 
       <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="license noopener">CC BY-NC-SA 4.0</a> ｜ 
       <a href="/tool-portal/terms.html" target="_blank" rel="noopener">利用条件</a> ｜ 
-      <span id="build-rev">r27</span>（<span id="last-updated-date"></span>）
+      <span id="build-rev">r28</span>（<span id="last-updated-date"></span>）
     </footer>
   </div>
 
@@ -385,11 +368,7 @@
     const salesEl=$('#sales'), salesMonthly=$('#salesMonthly'), salesYearly=$('#salesYearly'), avgEl=$('#avgPrice');
 
     const premEl=$('#prem');
-    const premMonthly=$('#premMonthly'), premYearly=$('#premYearly'), premOnce=$('#premOnce');
-
-    const recoverWrap = $('#recoverWrap');
-    const recoverMonthsEl = $('#recoverMonths');
-    const recChips = [$('#rec3'), $('#rec6'), $('#rec12'), $('#rec24')];
+    const premMonthly=$('#premMonthly'), premYearly=$('#premYearly');
 
     const covSection=$('#covSection');
     const premSection=$('#premSection');
@@ -444,7 +423,6 @@
     }
 
     const parseMoney = s => { if(!s) return NaN; const d=String(s).replace(/[^\d]/g,''); return d?Number(d):NaN; };
-    const parseMonths = s => { const d=normalizeDigits(s); return d?Number(d):NaN; };
 
     attachMoneyFormatter(covEl,  ()=>{ if(autoCov)  calcCoverage(false,false); });
     attachMoneyFormatter(premEl, ()=>{ if(autoPrem) calcPremium(false,false); else hideTacticsCTA(); });
@@ -456,25 +434,15 @@
       off.classList.remove('active'); off.setAttribute('aria-selected','false');
     }
 
-    function setChipGroupActive(activeBtn, btns){
-      btns.forEach(b=>{
-        const on = (b===activeBtn);
-        b.classList.toggle('active', on);
-        b.setAttribute('aria-selected', on ? 'true' : 'false');
-      });
-    }
-
     function getPremMode(){
-      if(premOnce.classList.contains('active')) return 'once';
       if(premYearly.classList.contains('active')) return 'year';
       return 'month';
     }
 
     function updatePlaceholders(){
       salesEl.placeholder = salesYearly.classList.contains('active') ? '例：120,000,000' : '例：10,000,000';
-
       const mode = getPremMode();
-      premEl.placeholder = (mode==='year') ? '例：144,000' : (mode==='once' ? '例：500,000' : '例：12,000');
+      premEl.placeholder = (mode==='year') ? '例：144,000' : '例：12,000';
     }
 
     salesMonthly.addEventListener('click', ()=>{
@@ -486,13 +454,11 @@
       if(!resCov.hidden||!resPrem.hidden) updateOptionalMetrics();
     });
 
-    // 方式A：支出タイプ切替
+    // 支出タイプ切替（月額 / 年額）
     function setPremMode(mode){
-      if(mode==='month') setChipGroupActive(premMonthly, [premMonthly,premYearly,premOnce]);
-      if(mode==='year')  setChipGroupActive(premYearly,  [premMonthly,premYearly,premOnce]);
-      if(mode==='once')  setChipGroupActive(premOnce,    [premMonthly,premYearly,premOnce]);
+      if(mode==='month') activateChip(premMonthly, premYearly);
+      if(mode==='year')  activateChip(premYearly,  premMonthly);
 
-      recoverWrap.hidden = (mode!=='once');
       hideTacticsCTA();
       updatePlaceholders();
 
@@ -502,40 +468,6 @@
 
     premMonthly.addEventListener('click', ()=> setPremMode('month'));
     premYearly .addEventListener('click', ()=> setPremMode('year'));
-    premOnce   .addEventListener('click', ()=> setPremMode('once'));
-
-    // 回収期間チップ
-    function setRecoverMonths(m){
-      recoverMonthsEl.value = String(m);
-      setChipGroupActive(recChips.find(b=>Number(b?.dataset?.m)===Number(m)) || null, recChips);
-      // null時は全解除
-      if(!recChips.some(b=>b.classList.contains('active'))){
-        recChips.forEach(b=>{ b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
-      }
-      hideTacticsCTA();
-      if(autoPrem) calcPremium(false,false);
-    }
-    recChips.forEach(btn=>{
-      btn?.addEventListener('click', ()=>{
-        const m = Number(btn.dataset.m);
-        if(m>0) setRecoverMonths(m);
-      });
-    });
-    recoverMonthsEl.addEventListener('input', ()=>{
-      // 入力でチップを解除（ただし一致するなら再点灯）
-      const m = parseMonths(recoverMonthsEl.value);
-      if(m>0){
-        const matched = recChips.find(b=>Number(b.dataset.m)===m);
-        if(matched) setChipGroupActive(matched, recChips);
-        else{
-          recChips.forEach(b=>{ b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
-        }
-      }else{
-        recChips.forEach(b=>{ b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
-      }
-      hideTacticsCTA();
-      if(autoPrem) calcPremium(false,false);
-    });
 
     updatePlaceholders();
 
@@ -567,12 +499,11 @@
         }else{ unitsCovChip.hidden = true; }
       }
 
-      // --- premium (方式A) ---
+      // --- premium (月額 / 年額) ---
       if(!resPrem.hidden && salesPremEl.textContent){
         const mode = salesPremEl.dataset.mode || 'month';
         const monthlyNeeded = Number(salesPremEl.dataset.monthly || 0);
         const annualNeeded  = Number(salesPremEl.dataset.annual  || 0);
-        const recoverM      = Number(salesPremEl.dataset.recover || 0);
 
         if(salesVal>0){
           const monthlyBase = (salesPeriod==='month') ? salesVal : (salesVal/12);
@@ -582,12 +513,9 @@
           if(mode==='month'){
             pct = (monthlyBase>0) ? (monthlyNeeded/monthlyBase)*100 : NaN;
             label = `月間売上の ${pct.toFixed(1)}%`;
-          }else if(mode==='year'){
+          }else{
             pct = (annualBase>0) ? (annualNeeded/annualBase)*100 : NaN;
             label = `年間売上の ${pct.toFixed(1)}%`;
-          }else{ // once
-            pct = (monthlyBase>0) ? (monthlyNeeded/monthlyBase)*100 : NaN;
-            label = `回収期間中の月間売上の ${pct.toFixed(1)}%`;
           }
 
           pctSalesPrem.textContent = label;
@@ -690,22 +618,16 @@
       premSection.scrollIntoView({behavior:'smooth', block:'start'});
     }
 
-    // 方式A：必要保険料（支出タイプ＋単発回収期間）
+    // 必要保険料（月額 / 年額）
     function calcPremium(scroll=true, manual=true){
       const rate = parsePct(cmrI.value)/100;
       const prem = parseMoney(premEl.value);
-      const mode = getPremMode();
+      const mode = getPremMode(); // month / year
 
-      let recoverM = 0;
-      if(mode==='once'){
-        recoverM = parseMonths(recoverMonthsEl.value);
-      }
-
-      if(!(rate>0) || !(prem>0) || (mode==='once' && !(recoverM>0))){
+      if(!(rate>0) || !(prem>0)){
         if(manual){
           if(!(rate>0)){ alert('限界利益率を正しく入力してください。'); cmrI.focus(); }
-          else if(!(prem>0)){ alert('必要保険料を入力してください。'); premEl.focus(); }
-          else { alert('回収期間（ヶ月）を正しく入力してください。'); recoverMonthsEl.focus(); }
+          else { alert('必要保険料を入力してください。'); premEl.focus(); }
         }
         resPrem.hidden = true;
         hideTacticsCTA();
@@ -717,7 +639,6 @@
       // 総必要売上（支出÷CMR）
       const totalNeeded = Math.ceil(prem / rate);
 
-      // 月・年の「必要売上」へ落とし込み（表示＆KPI用）
       let monthlyNeeded = 0;
       let annualNeeded  = 0;
 
@@ -731,7 +652,7 @@
           `<span class="blue up1">月${fmtJPY(monthlyNeeded)}の売上を追加で上げれば、必要な保険料をカバーし、将来の不安を解消できます。</span>`;
 
         formulaPrem.textContent = '計算式：必要保険料 ÷ (限界利益率 / 100)';
-      }else if(mode==='year'){
+      }else{
         annualNeeded  = totalNeeded;
         monthlyNeeded = Math.round(annualNeeded / 12);
 
@@ -741,20 +662,6 @@
           `<span class="blue up1">年${fmtJPY(annualNeeded)}（月${fmtJPY(monthlyNeeded)}）の売上を追加で上げれば、必要な保険料をカバーし、将来の不安を解消できます。</span>`;
 
         formulaPrem.textContent = '計算式：必要保険料 ÷ (限界利益率 / 100)';
-      }else{
-        // 単発：回収期間で月割り（安全側に切り上げ）
-        monthlyNeeded = Math.ceil(totalNeeded / recoverM);
-        annualNeeded  = monthlyNeeded * 12;
-
-        salesPremEl.innerHTML =
-          `${fmtJPY(monthlyNeeded)} / 月 <span style="font-size:0.75em; color:var(--muted); margin-left:4px;">（${recoverM}ヶ月で回収 / 総${fmtJPY(totalNeeded)}）</span>`;
-
-        stmtPrem.innerHTML =
-          `単発支出 ${fmtJPY(prem)} を <strong>${recoverM}ヶ月</strong>で回収すると仮定すると、<br>` +
-          `御社では <strong>月間売上 ${fmtJPY(monthlyNeeded)}</strong>（総売上 ${fmtJPY(totalNeeded)}）を追加で上げる必要があります。<br>` +
-          `<span class="blue up1">回収期間を短くするほど、必要な月間売上は増えます。</span>`;
-
-        formulaPrem.textContent = '計算式：（支出額 ÷ (限界利益率 / 100)）÷ 回収期間';
       }
 
       // dataset（KPI用）
@@ -762,7 +669,6 @@
       salesPremEl.dataset.monthly = String(monthlyNeeded);
       salesPremEl.dataset.annual = String(annualNeeded);
       salesPremEl.dataset.mode = mode;
-      salesPremEl.dataset.recover = String(recoverM || 0);
 
       resPrem.hidden=false;
       updateOptionalMetrics();
@@ -777,9 +683,8 @@
     $('#calcCov').addEventListener('click', ()=> calcCoverage(true,true));
     $('#calcPrem').addEventListener('click', ()=> calcPremium(true,true));
 
-    // ★打ち手検討 起動（方式A：月額換算の支出として渡す）
+    // ★打ち手検討 起動（月額換算の支出として渡す：月額＝そのまま、年額＝÷12）
     function buildTacticsPayloadOrAlert(){
-      // 1) 必要保険料結果が未計算なら、ここで計算を試みる（1クリックで済ませる）
       if(resPrem.hidden){
         calcPremium(true,true);
         if(resPrem.hidden) return null;
@@ -789,12 +694,7 @@
       const avgVal   = parseMoney(avgEl.value);
       const premVal  = parseMoney(premEl.value);
       const cmrVal   = parsePct(cmrI.value);
-      const mode     = getPremMode();
-
-      let recoverM = 0;
-      if(mode==='once'){
-        recoverM = parseMonths(recoverMonthsEl.value);
-      }
+      const mode     = getPremMode(); // month / year
 
       if(!(salesVal>0)){
         alert('売上を入力してください（年額／月額の切替も確認してください）。');
@@ -811,23 +711,14 @@
         premEl.focus();
         return null;
       }
-      if(mode==='once' && !(recoverM>0)){
-        alert('回収期間（ヶ月）を正しく入力してください。');
-        recoverMonthsEl.focus();
-        return null;
-      }
 
-      // 売上→年商（※月額なら×12）
       const annualSales = salesYearly.classList.contains('active') ? salesVal : salesVal * 12;
 
-      // 方式A：支出は月額換算で渡す（受け側を固定費モデルで統一）
       let expenseMonthlyEq = 0;
       if(mode==='month'){
         expenseMonthlyEq = premVal;
-      }else if(mode==='year'){
-        expenseMonthlyEq = Math.round(premVal / 12);
       }else{
-        expenseMonthlyEq = Math.round(premVal / recoverM);
+        expenseMonthlyEq = Math.round(premVal / 12);
       }
 
       return {
@@ -835,14 +726,11 @@
         annual_sales: Math.round(annualSales),
         unit_price: Math.round(avgVal),
 
-        // 方式A
         expense: Math.max(0, Math.round(expenseMonthlyEq)),
         expense_period: 'month',
 
-        // 参照情報（後段が拾えるなら拾う）
         raw_expense: Math.round(premVal),
-        raw_period: mode,               // month / year / once
-        recover_months: (mode==='once' ? recoverM : null),
+        raw_period: mode, // month / year
 
         cmr_pct: (cmrVal>0 ? Number(cmrVal.toFixed(1)) : null),
         created_at: new Date().toISOString(),
@@ -854,24 +742,20 @@
       const payload = buildTacticsPayloadOrAlert();
       if(!payload) return;
 
-      // localStorageでも渡す（受け側がクエリ非対応でも拾える）
       try{
         localStorage.setItem('mk_uchite_payload_v1', JSON.stringify(payload));
       }catch(e){ /* ignore */ }
 
-      // querystringでも渡す
       const qs = new URLSearchParams();
-      qs.set('annual_sales', String(payload.annual_sales));   // 年商
-      qs.set('unit_price',   String(payload.unit_price));     // 取引単価
-      qs.set('expense',      String(payload.expense));        // 支出（月額換算）
-      qs.set('expense_period', payload.expense_period);       // month
+      qs.set('annual_sales', String(payload.annual_sales));
+      qs.set('unit_price',   String(payload.unit_price));
+      qs.set('expense',      String(payload.expense));
+      qs.set('expense_period', payload.expense_period);
       if(payload.cmr_pct!=null) qs.set('cmr_pct', String(payload.cmr_pct));
       qs.set('src', payload.src);
 
-      // 参照情報
       qs.set('raw_expense', String(payload.raw_expense));
       qs.set('raw_period', String(payload.raw_period));
-      if(payload.recover_months!=null) qs.set('recover_months', String(payload.recover_months));
 
       const url = TACTICS_URL + (TACTICS_URL.includes('?') ? '&' : '?') + qs.toString() + '#autofill=1';
       window.open(url, '_blank', 'noopener');
@@ -906,12 +790,8 @@
     $('#reset').addEventListener('click', ()=>{
       [covEl, salesEl, avgEl, premEl].forEach(el=> el.value='');
       activateChip(salesYearly, salesMonthly);
-      setPremMode('month'); // 方式Aの既定
+      setPremMode('month');
       setCmr(43.6);
-
-      // 回収期間は初期値12ヶ月
-      recoverMonthsEl.value = '12';
-      setChipGroupActive($('#rec12'), recChips);
 
       resCov.hidden=true;
       transitionArea.hidden=true;
@@ -929,7 +809,6 @@
       salesPremEl.dataset.monthly = "0";
       salesPremEl.dataset.annual = "0";
       salesPremEl.dataset.mode = "month";
-      salesPremEl.dataset.recover = "0";
 
       setHasResult(covSection,false);
       setHasResult(premSection,false);
