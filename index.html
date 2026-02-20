@@ -56,7 +56,7 @@
     #cmr::-webkit-slider-thumb{-webkit-appearance:none; width:20px; height:20px; border-radius:50%; background:#fff; border:2px solid var(--accent); margin-top:-7px; box-shadow:0 1px 6px rgba(0,0,0,.08);}
     .pctbox input.pct{width:72px; font-size:18px;}
 
-    /* カラム比率を 1:1 から 1.7:1 に変更 */
+    /* カラム比率を 1.7:1 に変更 */
     .row-two{display:grid; grid-template-columns:1.7fr 1fr; gap:12px; align-items:end;}
     @media (max-width:680px){ .row-two{grid-template-columns:1fr;} }
 
@@ -92,11 +92,28 @@
     /* チップを中央揃えにするための調整 */
     .kpi{display:flex; align-items:center; flex-wrap:wrap; gap:10px; justify-content:center; position:relative;}
     .chip-like{background:#e9f6f8; border:1px dashed #8fb3c0; border-radius:12px; padding:8px 10px; font-weight:900;}
-    .formula-chip{position:absolute; right:0; top:50%; transform:translateY(-50%); margin-left:0; font-size:12px; color:#6a7a7d; border:0; background:transparent; padding:0;}
+
+    /* 計算式ポップアップ */
+    .formula-wrap { position:absolute; right:0; top:50%; transform:translateY(-50%); z-index:10;}
+    .formula-toggle { font-size:12px; color:#6a7a7d; border:0; background:transparent; padding:4px 8px; cursor:pointer; text-decoration:underline; font-weight:bold;}
+    .formula-toggle:hover { color:var(--accent); }
+    .formula-popover {
+      position:absolute; bottom:100%; right:0; margin-bottom:8px;
+      background:#2b3a3d; color:#fff; font-size:12px; padding:8px 12px;
+      border-radius:8px; white-space:nowrap; box-shadow:var(--shadow);
+      opacity: 0; visibility: hidden; transition: 0.2s ease; transform: translateY(4px);
+    }
+    .formula-popover.show { opacity: 1; visibility: visible; transform: translateY(0); }
+    .formula-popover::after {
+      content:''; position:absolute; top:100%; right:16px;
+      border-width:6px; border-style:solid; border-color:#2b3a3d transparent transparent transparent;
+    }
 
     /* 狭い画面では計算式を下に逃がす */
     @media (max-width:800px){
-      .formula-chip{position:static; transform:none; width:100%; text-align:right; margin-top:4px;}
+      .formula-wrap { position:static; transform:none; width:100%; display:flex; justify-content:flex-end; margin-top:4px;}
+      .formula-popover { bottom:auto; top:100%; margin-bottom:0; margin-top:8px; }
+      .formula-popover::after { top:auto; bottom:100%; border-color:transparent transparent #2b3a3d transparent; }
     }
 
     .transition-card {
@@ -184,6 +201,8 @@
       .transition-card{ display:none !important; }
       .card-actions{ display:none !important; }
       .cta-wrap{ display:none !important; } /* CTAは印刷不要 */
+      /* 印刷時は計算式のボタンを非表示にする */
+      .formula-wrap{ display:none !important; }
 
       /* 結果が無いセクションは印刷しない（E） */
       #covSection:not(.has-result){ display:none !important; }
@@ -259,7 +278,11 @@
         <div class="kpi">
           <span class="chip-like" id="pctAnnualCov" hidden>年間売上の — %</span>
           <span class="chip-like" id="unitsCovChip" hidden>必要販売数：—</span>
-          <span class="formula-chip">計算式：標準保障額 ÷ (限界利益率 / 100)</span>
+          
+          <div class="formula-wrap">
+            <button type="button" class="formula-toggle">計算式 ⓘ</button>
+            <div class="formula-popover">計算式：標準保障額 ÷ (限界利益率 / 100)</div>
+          </div>
         </div>
       </div>
     </section>
@@ -311,7 +334,11 @@
         <div class="kpi">
           <span class="chip-like" id="pctSalesPrem" hidden>—</span>
           <span class="chip-like" id="unitsPremChip" hidden>必要販売数：—</span>
-          <span class="formula-chip" id="formulaPrem">計算式：必要保険料 ÷ (限界利益率 / 100)</span>
+          
+          <div class="formula-wrap">
+            <button type="button" class="formula-toggle">計算式 ⓘ</button>
+            <div class="formula-popover" id="formulaPrem">計算式：必要保険料 ÷ (限界利益率 / 100)</div>
+          </div>
         </div>
 
         <div class="cta-wrap" id="tacticsArea" hidden>
@@ -334,7 +361,7 @@
       © <span id="cpy-year">2025</span> <a href="https://www.matsumoto-kaikei.or.jp/" target="_blank" rel="noopener license">税理士法人松本会計事務所</a> ｜ 
       <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="license noopener">CC BY-NC-SA 4.0</a> ｜ 
       <a href="/tool-portal/terms.html" target="_blank" rel="noopener">利用条件</a> ｜ 
-      <span id="build-rev">r29</span>（<span id="last-updated-date"></span>）
+      <span id="build-rev">r30</span>（<span id="last-updated-date"></span>）
     </footer>
   </div>
 
@@ -394,6 +421,28 @@
     // ★打ち手検討CTA
     const tacticsArea = $('#tacticsArea');
     const openTacticsBtn = $('#openTactics');
+
+    // --- ポップオーバー（計算式）の開閉処理 ---
+    document.querySelectorAll('.formula-toggle').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const popover = btn.nextElementSibling;
+        const isShowing = popover.classList.contains('show');
+        // 他のポップオーバーを一旦すべて閉じる
+        document.querySelectorAll('.formula-popover').forEach(p => p.classList.remove('show'));
+        // 閉じていた場合は開く
+        if (!isShowing) { popover.classList.add('show'); }
+      });
+    });
+    // 画面のどこかをクリックしたらポップオーバーを閉じる
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.formula-popover').forEach(p => p.classList.remove('show'));
+    });
+    // ポップオーバー内をクリックしても閉じないようにする
+    document.querySelectorAll('.formula-popover').forEach(p => {
+      p.addEventListener('click', e => e.stopPropagation());
+    });
+    // ------------------------------------------
 
     function setHasResult(sectionEl, has){
       if(!sectionEl) return;
