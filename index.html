@@ -1,9 +1,4 @@
 <!DOCTYPE html>
-<!-- internal version: r28
-  - ① 標準保障額プレースホルダーを「例：100,000,000」へ変更
-  - ② 必要保険料の支出タイプから「単発」を削除（回収期間UI/ロジックも削除）
-  - ③ 打ち手CTA文言を変更＋ボタン色をツールのトーン（アクセント）へ統一
--->
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
@@ -47,7 +42,8 @@
     .yen-input.compact{padding:4px 8px;}
     .yen-input .prefix{font-weight:700; color:var(--accent); border-right:1px solid #e6f1f3; padding-right:8px;}
     input.money,input.pct{border:0; outline:none; background:transparent; font-size:18px; font-weight:800; color:var(--ink);
-      letter-spacing:.02em; width:170px; text-align:right; font-feature-settings:"tnum"; font-variant-numeric:tabular-nums;}
+      letter-spacing:.02em; text-align:right; font-feature-settings:"tnum"; font-variant-numeric:tabular-nums;}
+    input.money{flex:1; width:100%;}
     input::placeholder{color:#8fa2a6; opacity:.30; font-weight:600;}
 
     .inline-actions{display:flex; align-items:center; gap:8px; flex-wrap:nowrap;}
@@ -84,8 +80,8 @@
     .chip.active{background:#cfe7ef; border-color:#9ecbd9; color:#0f4f63;}
 
     .result{margin-top:12px;}
-    .amount{font-size:clamp(22px,7vw,34px); font-weight:900; color:#2a6b7b; margin:4px 0 6px; font-feature-settings:"tnum"; font-variant-numeric:tabular-nums;}
-    .statement{font-weight:900; color:var(--ink); margin:6px 0 2px; line-height:1.6;}
+    .amount{text-align:center; font-size:clamp(22px,7vw,34px); font-weight:900; color:#2a6b7b; margin:4px 0 6px; font-feature-settings:"tnum"; font-variant-numeric:tabular-nums;}
+    .statement{text-align:center; font-weight:900; color:var(--ink); margin:6px 0 2px; line-height:1.6;}
     .blue{color:#1a6ea0;} .up1{font-size:1.1em;}
     .note-line{color:inherit;}
 
@@ -208,7 +204,6 @@
           <div class="inline-actions">
             <div class="yen-input compact">
               <span class="prefix">¥</span>
-              <!-- ① placeholder変更 -->
               <input id="cov" class="money" type="text" inputmode="numeric" placeholder="例：100,000,000" autocomplete="off" />
             </div>
             <button class="helper-btn" id="openCovInfo" type="button">標準保障額とは</button>
@@ -286,7 +281,6 @@
           <input id="prem" class="money" type="text" inputmode="numeric" placeholder="例：12,000" autocomplete="off" />
         </div>
 
-        <!-- ② 「単発」を削除（支出タイプは月額 / 年額のみ） -->
         <div class="chip-row" role="tablist" aria-label="支出のタイプ">
           <button class="chip active" id="premMonthly" type="button">月額</button>
           <button class="chip" id="premYearly" type="button">年額</button>
@@ -305,7 +299,6 @@
           <span class="formula-chip" id="formulaPrem">計算式：必要保険料 ÷ (限界利益率 / 100)</span>
         </div>
 
-        <!-- ③ 文言変更＋トーン統一 -->
         <div class="cta-wrap" id="tacticsArea" hidden>
           <button id="openTactics" class="cta-accent" type="button">
             売上を追加で上げるための「打ち手」を検討する <span class="arrow">→</span>
@@ -330,7 +323,6 @@
     </footer>
   </div>
 
-  <!-- (C) dialogのアクセシビリティ改善：aria-modal/aria-describedby + フォーカス復帰 -->
   <dialog id="covInfoDlg" aria-labelledby="covInfoTitle" aria-describedby="covInfoDesc" aria-modal="true" role="dialog">
     <p id="covInfoDesc" class="sr-only">
       標準保障額の考え方を図解で説明します。閉じるボタンでモーダルを閉じます。
@@ -397,7 +389,14 @@
     setCmr(43.6);
 
     cmrR.addEventListener('input', ()=>{ cmrI.value=(+cmrR.value).toFixed(1); if(autoAny()) autoRecalc(); });
-    cmrI.addEventListener('input', ()=>{ const v=parsePct(cmrI.value); if(!isNaN(v)) cmrR.value=v.toFixed(1); if(autoAny()) autoRecalc(); });
+    cmrI.addEventListener('input', ()=>{ 
+      let v=parsePct(cmrI.value); 
+      if(!isNaN(v)) {
+        if(v > 100) { v = 100; cmrI.value = '100'; }
+        cmrR.value=v.toFixed(1); 
+      }
+      if(autoAny()) autoRecalc(); 
+    });
 
     function normalizeDigits(str){
       if(!str) return '';
