@@ -37,8 +37,11 @@
     .card h2{margin:0 0 10px; font-size:18px; font-weight:900; color:#324245; letter-spacing:.01em;}
     .label{font-size:15px; color:var(--muted); margin:0 0 6px 2px;}
 
+    /* flex: 1; と min-width: 0; を追加して入力枠が横に広がるように調整 */
     .yen-input,.pctbox{display:flex; align-items:center; gap:8px; background:#f8fcfd; border:1px solid var(--border);
-      border-radius:12px; padding:6px 8px;}
+      border-radius:12px; padding:6px 8px; flex: 1; min-width: 0;}
+    .pctbox{ flex: none; } /* pctbox は広げない */
+    
     .yen-input.compact{padding:4px 8px;}
     .yen-input .prefix{font-weight:700; color:var(--accent); border-right:1px solid #e6f1f3; padding-right:8px;}
     input.money,input.pct{border:0; outline:none; background:transparent; font-size:18px; font-weight:800; color:var(--ink);
@@ -53,7 +56,8 @@
     #cmr::-webkit-slider-thumb{-webkit-appearance:none; width:20px; height:20px; border-radius:50%; background:#fff; border:2px solid var(--accent); margin-top:-7px; box-shadow:0 1px 6px rgba(0,0,0,.08);}
     .pctbox input.pct{width:72px; font-size:18px;}
 
-    .row-two{display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:end;}
+    /* カラム比率を 1:1 から 1.7:1 に変更 */
+    .row-two{display:grid; grid-template-columns:1.7fr 1fr; gap:12px; align-items:end;}
     @media (max-width:680px){ .row-two{grid-template-columns:1fr;} }
 
     .helper-btn{
@@ -85,9 +89,15 @@
     .blue{color:#1a6ea0;} .up1{font-size:1.1em;}
     .note-line{color:inherit;}
 
-    .kpi{display:flex; align-items:center; flex-wrap:wrap; gap:10px;}
+    /* チップを中央揃えにするための調整 */
+    .kpi{display:flex; align-items:center; flex-wrap:wrap; gap:10px; justify-content:center; position:relative;}
     .chip-like{background:#e9f6f8; border:1px dashed #8fb3c0; border-radius:12px; padding:8px 10px; font-weight:900;}
-    .formula-chip{margin-left:auto; font-size:12px; color:#6a7a7d; border:0; background:transparent; padding:0;}
+    .formula-chip{position:absolute; right:0; top:50%; transform:translateY(-50%); margin-left:0; font-size:12px; color:#6a7a7d; border:0; background:transparent; padding:0;}
+
+    /* 狭い画面では計算式を下に逃がす */
+    @media (max-width:800px){
+      .formula-chip{position:static; transform:none; width:100%; text-align:right; margin-top:4px;}
+    }
 
     .transition-card {
       background: #eef7f9;
@@ -274,17 +284,22 @@
     <section class="card" id="premSection" aria-label="必要保険料の換算" hidden>
       <h2>必要保険料の換算</h2>
 
-      <div class="label">必要保険料（円）</div>
-      <div class="inline-actions">
-        <div class="yen-input compact">
-          <span class="prefix">¥</span>
-          <input id="prem" class="money" type="text" inputmode="numeric" placeholder="例：12,000" autocomplete="off" />
-        </div>
+      <div class="row-two">
+        <div>
+          <div class="label">必要保険料（円）</div>
+          <div class="inline-actions">
+            <div class="yen-input compact">
+              <span class="prefix">¥</span>
+              <input id="prem" class="money" type="text" inputmode="numeric" placeholder="例：12,000" autocomplete="off" />
+            </div>
 
-        <div class="chip-row" role="tablist" aria-label="支出のタイプ">
-          <button class="chip active" id="premMonthly" type="button">月額</button>
-          <button class="chip" id="premYearly" type="button">年額</button>
+            <div class="chip-row" role="tablist" aria-label="支出のタイプ">
+              <button class="chip active" id="premMonthly" type="button">月額</button>
+              <button class="chip" id="premYearly" type="button">年額</button>
+            </div>
+          </div>
         </div>
+        <div></div>
       </div>
 
       <button id="calcPrem" class="btn" type="button" style="margin-top:12px;">売上に換算</button>
@@ -319,7 +334,7 @@
       © <span id="cpy-year">2025</span> <a href="https://www.matsumoto-kaikei.or.jp/" target="_blank" rel="noopener license">税理士法人松本会計事務所</a> ｜ 
       <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="license noopener">CC BY-NC-SA 4.0</a> ｜ 
       <a href="/tool-portal/terms.html" target="_blank" rel="noopener">利用条件</a> ｜ 
-      <span id="build-rev">r28</span>（<span id="last-updated-date"></span>）
+      <span id="build-rev">r29</span>（<span id="last-updated-date"></span>）
     </footer>
   </div>
 
